@@ -8,9 +8,20 @@ data class TimeRecord(
     val activityId: String,
     val startTime: Long,
     val endTime: Long,
-    val duration: Long
+    val duration: Long,
+    val type: RecordType, // Добавляем тип записи
+    val note: String = "" // Опциональное поле для заметок
 ) {
     companion object {
         fun generateId(): String = System.currentTimeMillis().toString()
     }
+}
+
+@Serializable
+enum class RecordType {
+    START,       // Начало активности
+    PAUSE,       // Пауза
+    RESET,       // Сброс
+    CONTINUE,    // Продолжение после паузы
+    COMPLETE     // Завершение активности
 }
