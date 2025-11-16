@@ -2,6 +2,7 @@ package app.sw.data.repository
 
 import app.sw.data.model.Activity
 import app.sw.data.model.AppSettings
+import app.sw.data.model.RecordType
 import app.sw.data.model.TimeRecord
 import kotlinx.serialization.json.Json
 import java.io.File
@@ -82,5 +83,22 @@ class ActivityRepository {
         } else {
             AppSettings.default()
         }
+    }
+
+    // В класс ActivityRepository добавим:
+    fun getActivityLogs(): List<TimeRecord> {
+        return loadTimeRecords().sortedByDescending { it.startTime }
+    }
+
+    fun clearLogs() {
+        try {
+            timeRecordsFile.delete()
+        } catch (e: Exception) {
+            println("Error clearing logs: ${e.message}")
+        }
+    }
+
+    fun getInactiveTimeRecords(): List<TimeRecord> {
+        return loadTimeRecords().filter { it.type == RecordType.INACTIVE }
     }
 }

@@ -11,8 +11,10 @@ interface StopwatchState {
     val isRunning: Boolean
     val displayTime: Long
     val selectedActivityId: String?
-    val activityLogs: List<LogEntry>
+    val activityLogs: List<TimeRecord>
     val isActivityTrackingEnabled: Boolean
+    val inactiveTime: Long // Время проведенное на паузе
+
     fun start()
     fun pause()
     fun reset()
@@ -20,13 +22,6 @@ interface StopwatchState {
     fun clearLogs()
     fun setActivityTrackingEnabled(enabled: Boolean)
 }
-
-data class LogEntry(
-    val activityName: String,
-    val duration: Long,
-    val type: RecordType,
-    val timestamp: Long = System.currentTimeMillis()
-)
 
 @Composable
 fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
@@ -36,7 +31,8 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
     var startTime by remember { mutableStateOf(0L) }
     var selectedActivityId by remember { mutableStateOf<String?>(null) }
     var currentRecordId by remember { mutableStateOf<String?>(null) }
-    var activityLogs by remember { mutableStateOf<List<LogEntry>>(emptyList()) }
+    var inactiveTime by remember { mutableStateOf(0L) }
+    var lastPauseStart by remember { mutableStateOf(0L) }
 
     // Загружаем настройки
     var appSettings by remember { mutableStateOf(repository.loadSettings()) }
@@ -50,47 +46,40 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
         repository.saveSettings(newSettings)
     }
 
+    // Функция для загрузки всех логов
+    fun loadAllLogs(): List<TimeRecord> {
+        return repository.getActivityLogs()
+    }
+
     // Функция для добавления записи в логи
-    fun addLog(type: RecordType, duration: Long = displayTime) {
-        selectedActivityId?.let { activityId ->
-            val activities = repository.loadActivities()
-            val activity = activities.find { it.id == activityId }
-            activity?.let {
-                val newLog = LogEntry(
-                    activityName = it.name,
-                    duration = duration,
-                    type = type
-                )
-                activityLogs = listOf(newLog) + activityLogs // Новые логи добавляются в начало
-            }
+    fun addRecord(activityId: String?, activityName: String, type: RecordType, duration: Long = 0) {
+        activityId?.let { id ->
+            val record = TimeRecord(
+                id = TimeRecord.generateId(),
+                activityId = id,
+                activityName = activityName,
+                startTime = System.currentTimeMillis(),
+                endTime = System.currentTimeMillis() + duration,
+                duration = duration,
+                type = type
+            )
+            repository.addTimeRecord(record)
         }
     }
 
-    // Функция для загрузки логов активности
-    fun loadActivityLogs() {
-        selectedActivityId?.let { activityId ->
-            val activities = repository.loadActivities()
-            val activity = activities.find { it.id == activityId }
-            val records = repository.loadTimeRecords()
-                .filter { it.activityId == activityId }
-                .sortedByDescending { it.startTime }
-
-            activityLogs = records.map { record ->
-                LogEntry(
-                    activityName = activity?.name ?: "Неизвестно",
-                    duration = record.duration,
-                    type = record.type,
-                    timestamp = record.startTime
-                )
-            }
-        } ?: run {
-            activityLogs = emptyList()
-        }
-    }
-
-    // Загружаем логи при изменении выбранной активности
-    LaunchedEffect(selectedActivityId) {
-        loadActivityLogs()
+    // Функция для добавления записи о бездействии
+    fun addInactiveRecord(duration: Long) {
+        val record = TimeRecord(
+            id = TimeRecord.generateId(),
+            activityId = "inactive",
+            activityName = "Пауза",
+            startTime = System.currentTimeMillis() - duration,
+            endTime = System.currentTimeMillis(),
+            duration = duration,
+            type = RecordType.INACTIVE
+        )
+        repository.addTimeRecord(record)
+        inactiveTime += duration
     }
 
     return remember {
@@ -101,23 +90,37 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
                 get() = displayTime
             override val selectedActivityId: String?
                 get() = selectedActivityId
-            override val activityLogs: List<LogEntry>
-                get() = activityLogs
+            override val activityLogs: List<TimeRecord>
+                get() = loadAllLogs()
             override val isActivityTrackingEnabled: Boolean
                 get() = appSettings.isActivityTrackingEnabled
+            override val inactiveTime: Long
+                get() = inactiveTime
 
             override fun start() {
                 if (!isRunning) {
+                    // Если было время паузы, добавляем запись о бездействии
+                    if (lastPauseStart > 0) {
+                        val pauseDuration = System.currentTimeMillis() - lastPauseStart
+                        if (pauseDuration > 1000) { // Только если пауза была больше 1 секунды
+                            addInactiveRecord(pauseDuration)
+                        }
+                        lastPauseStart = 0
+                    }
+
                     isRunning = true
                     startTime = System.currentTimeMillis() - accumulatedTime
 
                     // Определяем тип записи: начало или продолжение
                     val recordType = if (accumulatedTime > 0) RecordType.CONTINUE else RecordType.START
 
-                    // Создаем новую запись если активность выбрана
+                    // Создаем запись если активность выбрана
                     selectedActivityId?.let { activityId ->
-                        currentRecordId = TimeRecord.generateId()
-                        addLog(recordType)
+                        val activities = repository.loadActivities()
+                        val activity = activities.find { it.id == activityId }
+                        activity?.let {
+                            addRecord(activityId, it.name, recordType)
+                        }
                     }
 
                     job = coroutineScope.launch {
@@ -133,22 +136,14 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
                 isRunning = false
                 job?.cancel()
                 accumulatedTime = displayTime
+                lastPauseStart = System.currentTimeMillis()
 
-                // Сохраняем запись и добавляем в логи
+                // Сохраняем запись если активность выбрана
                 selectedActivityId?.let { activityId ->
-                    currentRecordId?.let { recordId ->
-                        if (displayTime > 0) {
-                            val record = TimeRecord(
-                                id = recordId,
-                                activityId = activityId,
-                                startTime = startTime,
-                                endTime = System.currentTimeMillis(),
-                                duration = displayTime,
-                                type = RecordType.PAUSE
-                            )
-                            repository.addTimeRecord(record)
-                            addLog(RecordType.PAUSE, displayTime)
-                        }
+                    val activities = repository.loadActivities()
+                    val activity = activities.find { it.id == activityId }
+                    activity?.let {
+                        addRecord(activityId, it.name, RecordType.PAUSE, displayTime)
                     }
                 }
             }
@@ -162,12 +157,12 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
                     displayTime = 0
 
                     // Добавляем запись о сбросе
-                    addLog(RecordType.RESET, resetDuration)
-
-                    // Если активность выбрана, создаем новую запись для нового отсчета
                     selectedActivityId?.let { activityId ->
-                        currentRecordId = TimeRecord.generateId()
-                        addLog(RecordType.START)
+                        val activities = repository.loadActivities()
+                        val activity = activities.find { it.id == activityId }
+                        activity?.let {
+                            addRecord(activityId, it.name, RecordType.RESET, resetDuration)
+                        }
                     }
                 } else {
                     // Если секундомер не работает - полный сброс
@@ -175,17 +170,42 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
                     accumulatedTime = 0
                     displayTime = 0
                     currentRecordId = null
-                    activityLogs = emptyList()
+                    lastPauseStart = 0
                 }
             }
 
             override fun setSelectedActivity(activityId: String?) {
+                // Если таймер работает и мы меняем активность, сохраняем текущую активность
+                if (isRunning && selectedActivityId != null) {
+                    selectedActivityId?.let { currentActivityId ->
+                        val activities = repository.loadActivities()
+                        val currentActivity = activities.find { it.id == currentActivityId }
+                        currentActivity?.let {
+                            addRecord(currentActivityId, it.name, RecordType.COMPLETE, displayTime)
+                        }
+                    }
+
+                    // Сбрасываем для новой активности
+                    accumulatedTime = 0
+                    displayTime = 0
+                    startTime = System.currentTimeMillis()
+                }
+
                 selectedActivityId = activityId
-                loadActivityLogs()
+
+                // Начинаем новую активность если таймер работает
+                if (isRunning && activityId != null) {
+                    val activities = repository.loadActivities()
+                    val activity = activities.find { it.id == activityId }
+                    activity?.let {
+                        addRecord(activityId, it.name, RecordType.START)
+                    }
+                }
             }
 
             override fun clearLogs() {
-                activityLogs = emptyList()
+                repository.clearLogs()
+                inactiveTime = 0
             }
 
             override fun setActivityTrackingEnabled(enabled: Boolean) {
@@ -193,7 +213,6 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
                 if (!enabled) {
                     // При отключении трекинга сбрасываем выбранную активность
                     selectedActivityId = null
-                    activityLogs = emptyList()
                 }
             }
         }

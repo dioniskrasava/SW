@@ -12,12 +12,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.sw.data.model.RecordType
-import app.sw.ui.main.LogEntry
+import app.sw.data.model.TimeRecord
 import app.sw.util.formatTime
+import app.sw.util.formatTimeHumanReadable
 
 @Composable
 fun ActivityLogs(
-    logs: List<LogEntry>,
+    logs: List<TimeRecord>,
     modifier: Modifier = Modifier
 ) {
     if (logs.isEmpty()) {
@@ -36,7 +37,7 @@ fun ActivityLogs(
 
     LazyColumn(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
         items(logs) { log ->
             LogItem(log = log)
@@ -45,50 +46,54 @@ fun ActivityLogs(
 }
 
 @Composable
-private fun LogItem(log: LogEntry) {
+private fun LogItem(log: TimeRecord) {
     Card(
-        backgroundColor = MaterialTheme.colors.surface,
-        elevation = 1.dp,
-        modifier = Modifier.fillMaxWidth()
+        backgroundColor = when (log.type) {
+            RecordType.INACTIVE -> MaterialTheme.colors.background
+            else -> MaterialTheme.colors.surface
+        },
+        elevation = if (log.type == RecordType.INACTIVE) 0.dp else 1.dp,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp)
     ) {
         Row(
             modifier = Modifier.padding(12.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Префикс в зависимости от типа
-            val prefix = when (log.type) {
-                RecordType.START -> "--"
-                RecordType.PAUSE -> "=="
-                RecordType.RESET -> "--"
-                RecordType.CONTINUE -> "--"
-                RecordType.COMPLETE -> "++"
-            }
-
-            // Текст в зависимости от типа
-            val typeText = when (log.type) {
-                RecordType.START -> "начало"
-                RecordType.PAUSE -> "пауза"
-                RecordType.RESET -> "сброс"
-                RecordType.CONTINUE -> "продолжение"
-                RecordType.COMPLETE -> "завершение"
+            // Префикс и текст в зависимости от типа
+            val (prefix, mainText, typeText) = when (log.type) {
+                RecordType.START -> Triple("--", "${log.activityName}", "начало")
+                RecordType.PAUSE -> Triple("==", "${log.activityName}", "пауза")
+                RecordType.RESET -> Triple("--", "${log.activityName}", "сброс")
+                RecordType.CONTINUE -> Triple("--", "${log.activityName}", "продолжение")
+                RecordType.COMPLETE -> Triple("++", "${log.activityName}", "завершение")
+                RecordType.INACTIVE -> Triple("••", "Пауза", "бездействие")
             }
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "$prefix ${log.activityName} $prefix",
-                    color = MaterialTheme.colors.onSurface,
+                    text = "$prefix $mainText $prefix",
+                    color = when (log.type) {
+                        RecordType.INACTIVE -> MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
+                        else -> MaterialTheme.colors.onSurface
+                    },
                     fontWeight = FontWeight.Medium,
                     fontSize = 14.sp
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = formatTime(log.duration),
-                    color = MaterialTheme.colors.onSurface.copy(alpha = 0.8f),
-                    fontSize = 12.sp
-                )
+                if (log.type != RecordType.START && log.type != RecordType.CONTINUE) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = formatTimeHumanReadable(log.duration),
+                        color = when (log.type) {
+                            RecordType.INACTIVE -> MaterialTheme.colors.onBackground.copy(alpha = 0.4f)
+                            else -> MaterialTheme.colors.onSurface.copy(alpha = 0.8f)
+                        },
+                        fontSize = 12.sp
+                    )
+                }
             }
 
             Text(
@@ -97,6 +102,7 @@ private fun LogItem(log: LogEntry) {
                     RecordType.PAUSE -> Color(0xFFFF9800) // Оранжевый для паузы
                     RecordType.RESET -> Color(0xFFF44336) // Красный для сброса
                     RecordType.CONTINUE -> Color(0xFF4CAF50) // Зеленый для продолжения
+                    RecordType.INACTIVE -> MaterialTheme.colors.onBackground.copy(alpha = 0.3f)
                     else -> MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
                 },
                 fontSize = 11.sp,

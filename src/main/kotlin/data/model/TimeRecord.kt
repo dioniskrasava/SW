@@ -6,11 +6,11 @@ import kotlinx.serialization.Serializable
 data class TimeRecord(
     val id: String,
     val activityId: String,
+    val activityName: String, // Добавляем имя активности для истории
     val startTime: Long,
     val endTime: Long,
     val duration: Long,
-    val type: RecordType, // Добавляем тип записи
-    val note: String = "" // Опциональное поле для заметок
+    val type: RecordType
 ) {
     companion object {
         fun generateId(): String = System.currentTimeMillis().toString()
@@ -23,5 +23,6 @@ enum class RecordType {
     PAUSE,       // Пауза
     RESET,       // Сброс
     CONTINUE,    // Продолжение после паузы
-    COMPLETE     // Завершение активности
+    COMPLETE,    // Завершение активности
+    INACTIVE     // Период бездействия (пауза между активностями)
 }

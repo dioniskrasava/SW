@@ -15,6 +15,7 @@ import app.sw.data.repository.ActivityRepository
 import app.sw.ui.components.ActivityLogs
 import app.sw.ui.components.StopwatchButton
 import app.sw.util.formatTime
+import app.sw.util.formatTimeHumanReadable
 import app.sw.util.parseColor
 
 @Composable
@@ -63,28 +64,37 @@ fun StopwatchScreen(
         // Кнопки управления секундомером
         ControlButtons(stopwatchState = stopwatchState)
 
-        // Логи активности (только если включен трекинг и есть выбранная активность)
-        if (stopwatchState.isActivityTrackingEnabled &&
-            stopwatchState.selectedActivityId != null &&
-            stopwatchState.activityLogs.isNotEmpty()) {
-
+        // В функции StopwatchScreen заменим блок с логами на:
+// Логи активности (только если включен трекинг)
+        if (stopwatchState.isActivityTrackingEnabled && stopwatchState.activityLogs.isNotEmpty()) {
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "История активности:",
+                text = "История всех активностей:",
                 style = MaterialTheme.typography.subtitle1,
                 color = MaterialTheme.colors.onBackground
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Общее время бездействия
+            if (stopwatchState.inactiveTime > 0) {
+                Text(
+                    text = "Общее время пауз: ${formatTimeHumanReadable(stopwatchState.inactiveTime)}",
+                    style = MaterialTheme.typography.caption,
+                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+            }
+
             ActivityLogs(
                 logs = stopwatchState.activityLogs,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 200.dp)
+                    .heightIn(min = 100.dp, max = 400.dp) // Теперь можно прокручивать все логи
             )
 
             Spacer(modifier = Modifier.height(12.dp))
             StopwatchButton(
-                text = "Очистить логи",
+                text = "Очистить историю",
                 onClick = { stopwatchState.clearLogs() },
                 enabled = true
             )
