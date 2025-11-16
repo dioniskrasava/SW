@@ -24,7 +24,7 @@ fun main() = application {
 
     Window(
         title = "Умный секундомер",
-        state = rememberWindowState(width = 270.dp, height = 140.dp),
+        state = rememberWindowState(width = 320.dp, height = 140.dp),
         onCloseRequest = ::exitApplication
     ) {
         MaterialTheme(

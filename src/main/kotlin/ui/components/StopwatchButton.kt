@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 private val InactiveButtonColor = Color(0xFF011731)
-private val ActiveButtonColor = Color(0xFF995E05)
+private val ActiveButtonColor = Color(0xFF033571)
 private val ButtonTextColor = Color(0xFFADC1D7)
 
 @Composable

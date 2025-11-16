@@ -1,9 +1,8 @@
 package app.sw.ui.main
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Phone
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,34 +20,41 @@ fun StopwatchScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(6.dp),
+            .background(MaterialTheme.colors.background)
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Settings button in top right
-        Box(modifier = Modifier.fillMaxWidth()) {
-            IconButton(
-                onClick = onSettingsClick,
-                modifier = Modifier.align(Alignment.TopEnd)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Phone,
-                    contentDescription = "Settings"
-                )
-            }
+        // Верхняя строка: время и кнопка настроек на одном уровне
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            // Пустой элемент для балансировки (занимает столько же места, сколько кнопка настроек)
+            Box(
+                modifier = Modifier
+                    .width(60.dp) // Такая же ширина как у кнопки настроек
+                    .height(40.dp) // Такая же высота как у кнопки настроек
+            )
+
+            // Основное время по центру
+            TimeDisplay(displayTime = stopwatchState.displayTime)
+
+            // Кнопка настроек справа
+            SettingsButton(onClick = onSettingsClick)
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        TimeDisplay(displayTime = stopwatchState.displayTime)
-        Spacer(modifier = Modifier.height(16.dp))
+        // Кнопки управления секундомером
         ControlButtons(stopwatchState = stopwatchState)
 
-        // Activity selection (will be visible only in expanded mode)
+        // Информация о выбранной активности (если есть)
         if (stopwatchState.selectedActivityId != null) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Activity selected",
+                text = "Активность выбрана",
                 style = MaterialTheme.typography.caption,
                 color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
             )
@@ -60,10 +66,34 @@ fun StopwatchScreen(
 private fun TimeDisplay(displayTime: Long) {
     Text(
         text = formatTime(displayTime),
-        modifier = Modifier.padding(6.dp),
-        fontSize = 42.sp,
+        fontSize = 38.sp, // Немного увеличим шрифт
         color = MaterialTheme.colors.onBackground
     )
+}
+
+@Composable
+private fun SettingsButton(
+    onClick: () -> Unit
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = Modifier
+            .width(60.dp) // Фиксированная ширина
+            .height(40.dp), // Фиксированная высота
+        colors = ButtonDefaults.textButtonColors(
+            contentColor = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
+        )
+    ) {
+        Text(
+            //text = "⋮", // Юникод символ - три точки по вертикали
+            //text = "⋯",
+            //text = "⚙",
+            //text = "⚙️", // аналог вышестоящего
+            text = "☰",
+            fontSize = 24.sp,
+            style = MaterialTheme.typography.h6
+        )
+    }
 }
 
 @Composable
