@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm") version "1.9.0"
     id("org.jetbrains.compose") version "1.5.0"
+    kotlin("plugin.serialization") version "1.9.0"
 }
 
 group = "app.sw"
@@ -15,6 +16,7 @@ dependencies {
     testImplementation(kotlin("test"))
     implementation(compose.desktop.currentOs)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1")
 }
 
 compose.desktop {
@@ -22,15 +24,14 @@ compose.desktop {
         mainClass = "app.sw.MainKt"
 
         nativeDistributions {
-            packageName = "ComposeCounter"
+            packageName = "StopwatchApp"
             packageVersion = "1.0.0"
-            description = "Простое приложение-счётчик"
+            description = "Приложение-секундомер с трекингом активностей"
 
             linux {
                 appCategory = "Utility"
             }
 
-            // Только AppImage для простоты
             targetFormats(
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.AppImage,
                 org.jetbrains.compose.desktop.application.dsl.TargetFormat.Deb
