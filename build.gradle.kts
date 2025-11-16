@@ -25,7 +25,7 @@ compose.desktop {
 
         nativeDistributions {
             packageName = "StopwatchApp"
-            packageVersion = "1.0.0"
+            packageVersion = "1.0.3"
             description = "Приложение-секундомер с трекингом активностей"
 
             linux {
