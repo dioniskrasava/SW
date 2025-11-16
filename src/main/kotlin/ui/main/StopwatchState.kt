@@ -81,15 +81,41 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
             }
 
             override fun reset() {
-                isRunning = false
-                job?.cancel()
-                accumulatedTime = 0
-                displayTime = 0
-                currentRecordId = null
+                if (isRunning) {
+                    // Если секундомер работает - сбрасываем время, но продолжаем отсчет
+                    accumulatedTime = 0
+                    startTime = System.currentTimeMillis()
+                    displayTime = 0
+
+                    // Если активность выбрана, создаем новую запись для нового отсчета
+                    selectedActivityId?.let { activityId ->
+                        // Сохраняем текущую запись (если она есть)
+                        currentRecordId?.let { recordId ->
+                            if (displayTime > 0) {
+                                val record = TimeRecord(
+                                    id = recordId,
+                                    activityId = activityId,
+                                    startTime = startTime - displayTime, // Корректируем startTime
+                                    endTime = System.currentTimeMillis(),
+                                    duration = displayTime
+                                )
+                                repository.addTimeRecord(record)
+                            }
+                        }
+                        // Создаем новую запись для нового отсчета
+                        currentRecordId = TimeRecord.generateId()
+                    }
+                } else {
+                    // Если секундомер не работает - полный сброс
+                    job?.cancel()
+                    accumulatedTime = 0
+                    displayTime = 0
+                    currentRecordId = null
+                }
             }
 
             override fun setSelectedActivity(activityId: String?) {
-                // If timer is running and we're changing activity, save current record first
+                // Если таймер работает и мы меняем активность, сохраняем текущую запись
                 if (isRunning && selectedActivityId != null && selectedActivityId != activityId) {
                     selectedActivityId?.let { currentActivityId ->
                         currentRecordId?.let { recordId ->
@@ -106,7 +132,7 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
                         }
                     }
 
-                    // Reset timer for new activity
+                    // Сбрасываем для новой активности
                     accumulatedTime = 0
                     displayTime = 0
                     startTime = System.currentTimeMillis()

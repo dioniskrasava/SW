@@ -45,7 +45,7 @@ fun StopwatchScreen(
             SettingsButton(onClick = onSettingsClick)
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Кнопки управления секундомером
         ControlButtons(stopwatchState = stopwatchState)
@@ -81,14 +81,10 @@ private fun SettingsButton(
             .width(60.dp) // Фиксированная ширина
             .height(40.dp), // Фиксированная высота
         colors = ButtonDefaults.textButtonColors(
-            contentColor = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
+            contentColor = MaterialTheme.colors.onBackground.copy(alpha = 0.1f)
         )
     ) {
         Text(
-            //text = "⋮", // Юникод символ - три точки по вертикали
-            //text = "⋯",
-            //text = "⚙",
-            //text = "⚙️", // аналог вышестоящего
             text = "☰",
             fontSize = 24.sp,
             style = MaterialTheme.typography.h6
