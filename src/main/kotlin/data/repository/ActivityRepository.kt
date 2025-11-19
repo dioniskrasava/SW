@@ -7,6 +7,9 @@ import app.sw.data.model.TimeRecord
 import kotlinx.serialization.json.Json
 import java.io.File
 
+
+// КЛАССЫ ДЛЯ ДОСТУПА К ДАННЫМ - РЕПОЗИТОРИИ
+
 class ActivityRepository {
     private val activitiesFile = File("activities.json")
     private val timeRecordsFile = File("time_records.json")
