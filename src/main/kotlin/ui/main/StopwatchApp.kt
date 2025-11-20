@@ -24,7 +24,7 @@ fun StopwatchApp(
     // Размеры окна в зависимости от режима
     LaunchedEffect(isExpanded) {
         val width = if (isExpanded) 500 else 400
-        val height = if (isExpanded) 500 else 140
+        val height = if (isExpanded) 470 else 180
         onWindowResize(width, height)
     }
 

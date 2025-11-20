@@ -50,7 +50,7 @@ fun StopwatchScreen(
             SettingsButton(onClick = onSettingsClick)
         }
 
-        Spacer(modifier = Modifier.height(40.dp))
+       // Spacer(modifier = Modifier.height(40.dp))
 
         // Если включен трекинг активностей, показываем выбор активности
         if (stopwatchState.isActivityTrackingEnabled) {
