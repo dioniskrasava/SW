@@ -30,3 +30,8 @@
 ## v 1.0.0.
 
 Инициализация проекта как приложения простого секундомера на Compose.
+
+
+
+---
+Added, Changed, Deprecated, Removed, Fixed, Security
