@@ -39,14 +39,21 @@ private val TextOnBackground = androidx.compose.ui.graphics.Color(0xFF81B4FD)
  * @see StopwatchApp
  * @see ActivityRepository
  * @see rememberStopwatchState
+ * @see AppSettings
  */
 fun main() = application {
     val repository = remember { ActivityRepository() }
     val stopwatchState = rememberStopwatchState(repository)
 
+    // Загружаем настройки для начальных размеров окна
+    val settings = repository.loadSettings()
+
     Window(
-        title = "Умный секундомер",
-        state = rememberWindowState(width = 400.dp, height = 140.dp),
+        title = "StopWatch",
+        state = rememberWindowState(
+            width = settings.mainWindowWidth.dp,
+            height = settings.mainWindowHeight.dp
+        ),
         onCloseRequest = ::exitApplication
     ) {
         MaterialTheme(

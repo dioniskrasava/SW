@@ -14,6 +14,11 @@ import kotlinx.serialization.Serializable
  * @property showLogsInMainScreen Показывать ли историю логов на главном экране
  *        - `true`: отображать историю под секундомером
  *        - `false`: скрывать историю (только кнопки управления)
+ * @property mainWindowWidth Ширина главного окна в dp
+ * @property mainWindowHeight Высота главного окна в dp
+ * @property settingsWindowWidth Ширина окна настроек в dp
+ * @property settingsWindowHeight Высота окна настроек в dp
+ *
  *
  * @see Activity
  * @see TimeRecord
@@ -21,7 +26,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AppSettings(
     val isActivityTrackingEnabled: Boolean = false,
-    val showLogsInMainScreen: Boolean = true
+    val showLogsInMainScreen: Boolean = true,
+    val mainWindowWidth: Int = 400,
+    val mainWindowHeight: Int = 180,
+    val settingsWindowWidth: Int = 500,
+    val settingsWindowHeight: Int = 500,
 ) {
     companion object {
         /**

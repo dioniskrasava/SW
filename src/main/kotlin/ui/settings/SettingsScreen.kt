@@ -39,7 +39,7 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Основные", "Активности")
+    val tabs = listOf("Основные", "Активности", "Окна")
 
     Column(
         modifier = modifier
@@ -80,6 +80,9 @@ fun SettingsScreen(
             0 -> GeneralSettingsTab(stopwatchState = stopwatchState)
             1 -> ActivitiesManagementTab(
                 stopwatchState = stopwatchState,
+                repository = repository
+            )
+            2 -> WindowSettingsTab(
                 repository = repository
             )
         }

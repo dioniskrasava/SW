@@ -37,6 +37,7 @@ sealed class AppScreen {
  * @see SettingsScreen
  * @see StopwatchState
  * @see AppScreen
+ * @see AppSettings
  */
 @Composable
 fun StopwatchApp(
@@ -48,10 +49,13 @@ fun StopwatchApp(
     var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Main) }
     var isExpanded by remember { mutableStateOf(false) }
 
+    // Загружаем текущие настройки для размеров окон
+    val settings = repository.loadSettings()
+
     // Размеры окна в зависимости от режима
-    LaunchedEffect(isExpanded) {
-        val width = if (isExpanded) 500 else 400
-        val height = if (isExpanded) 500 else 140
+    LaunchedEffect(isExpanded, settings) {
+        val width = if (isExpanded) settings.settingsWindowWidth else settings.mainWindowWidth
+        val height = if (isExpanded) settings.settingsWindowHeight else settings.mainWindowHeight
         onWindowResize(width, height)
     }
 
