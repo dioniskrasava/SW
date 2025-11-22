@@ -16,6 +16,20 @@ import app.sw.data.model.TimeRecord
 import app.sw.util.formatTime
 import app.sw.util.formatTimeHumanReadable
 
+/**
+ * Composable компонент для отображения истории активностей и временных записей.
+ *
+ * Отображает список временных записей в виде прокручиваемого списка с различным
+ * визуальным оформлением в зависимости от типа записи.
+ *
+ * @param logs Список временных записей для отображения
+ * @param modifier Модификатор для настройки layout и поведения компонента
+ *
+ * @sample StopwatchScreen
+ * @see TimeRecord
+ * @see RecordType
+ * @see LogItem
+ */
 @Composable
 fun ActivityLogs(
     logs: List<TimeRecord>,
@@ -45,6 +59,20 @@ fun ActivityLogs(
     }
 }
 
+/**
+ * Composable компонент для отображения отдельной записи в логе.
+ *
+ * Визуализирует одну временную запись с учетом ее типа:
+ * - Разные цвета и префиксы для различных типов событий
+ * - Отображение продолжительности для соответствующих типов записей
+ * - Специальное оформление для периодов бездействия
+ *
+ * @param log Временная запись для отображения
+ *
+ * @see TimeRecord
+ * @see RecordType
+ * @see formatTimeHumanReadable
+ */
 @Composable
 private fun LogItem(log: TimeRecord) {
     Card(

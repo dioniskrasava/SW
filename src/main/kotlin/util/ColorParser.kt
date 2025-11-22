@@ -2,6 +2,29 @@ package app.sw.util
 
 import androidx.compose.ui.graphics.Color
 
+/**
+ * Утилиты для работы с цветами в приложении.
+ *
+ * Предоставляет функции для преобразования строковых представлений цветов
+ * в объекты [Color] Compose и обратно.
+ */
+
+/**
+ * Преобразует строку с HEX-кодом цвета в объект [Color].
+ *
+ * Поддерживает форматы:
+ * - 6 символов (RGB): "#RRGGBB" или "RRGGBB"
+ * - 8 символов (ARGB): "#AARRGGBB" или "AARRGGBB"
+ *
+ * @param colorHex Строка с HEX-кодом цвета, может содержать символ '#' в начале
+ * @return Объект Color или [Color.Black] в случае ошибки парсинга
+ *
+ * @throws NumberFormatException если HEX-строка содержит недопустимые символы
+ * @sample ColorParserTest.parseColor_validFormats
+ *
+ * @see Color
+ * @see String.toColor
+ */
 fun parseColor(colorHex: String): Color {
     return try {
         // Убираем # если есть
@@ -28,5 +51,15 @@ fun parseColor(colorHex: String): Color {
     }
 }
 
-// Extension функция для удобства
+/**
+ * Extension-функция для удобного преобразования строки в цвет.
+ *
+ * Позволяет использовать syntax: `"#FF5252".toColor()`
+ *
+ * @receiver Строка с HEX-кодом цвета
+ * @return Объект Color, полученный через [parseColor]
+ *
+ * @sample ColorParserTest.extensionFunction
+ * @see parseColor
+ */
 fun String.toColor(): Color = parseColor(this)

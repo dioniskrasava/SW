@@ -10,6 +10,22 @@ private val InactiveButtonColor = Color(0xFF011731)
 private val ActiveButtonColor = Color(0xFF1491F6)
 private val ButtonTextColor = Color(0xFFADC1D7)
 
+/**
+ * Кастомная кнопка для интерфейса секундомера.
+ *
+ * Специализированная кнопка с предопределенной цветовой схемой, соответствующей
+ * дизайн-системе приложения. Имеет два состояния:
+ * - Активное (enabled = true): темно-синий фон
+ * - Неактивное (enabled = false): синий фон (визуально выделенная)
+ *
+ * @param text Текст, отображаемый на кнопке
+ * @param onClick Callback-функция, вызываемая при нажатии на кнопку
+ * @param enabled Определяет состояние кнопки и ее визуальное представление
+ *
+ * @sample StopwatchScreen
+ * @see Button
+ * @see ButtonDefaults
+ */
 @Composable
 fun StopwatchButton(
     text: String,

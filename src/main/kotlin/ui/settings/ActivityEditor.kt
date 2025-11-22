@@ -27,6 +27,26 @@ import app.sw.data.model.Activity
 import app.sw.util.parseColor
 import kotlin.random.Random
 
+/**
+ * Диалоговое окно редактирования активности.
+ *
+ * Предоставляет интерфейс для создания и редактирования активностей:
+ * - Ввод названия активности
+ * - Выбор цвета из палитры
+ * - Сохранение изменений
+ * - Удаление активности (в режиме редактирования)
+ *
+ * Автоматически фокусируется на поле ввода при открытии.
+ *
+ * @param activity Активность для редактирования или null для создания новой
+ * @param onSave Callback при сохранении активности
+ * @param onDelete Callback при удалении активности
+ * @param onDismiss Callback при закрытии диалога без сохранения
+ *
+ * @sample ActivitiesManagementTab
+ * @see ColorGrid
+ * @see ActionButtons
+ */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun ActivityEditor(
@@ -143,6 +163,18 @@ fun ActivityEditor(
     }
 }
 
+/**
+ * Компонент выбора цвета из сетки предопределенных цветов.
+ *
+ * Отображает палитру из 12 цветов, организованных в 3 строки по 4 цвета.
+ * Поддерживает выбор цвета с визуальной индикацией выбранного варианта.
+ *
+ * @param selectedColor Выбранный цвет в HEX-формате
+ * @param onColorSelected Callback при выборе цвета
+ *
+ * @see ActivityEditor
+ * @see ColorItem
+ */
 @Composable
 private fun ColorGrid(
     selectedColor: String,
@@ -176,6 +208,19 @@ private fun ColorGrid(
     }
 }
 
+/**
+ * Элемент выбора цвета в палитре.
+ *
+ * Отображает цветной квадрат с рамкой для выбранного состояния.
+ * Поддерживает индикацию выбора через галочку.
+ *
+ * @param colorHex Цвет в HEX-формате
+ * @param isSelected Флаг выбранного состояния
+ * @param onSelected Callback при выборе цвета
+ *
+ * @see ColorGrid
+ * @see parseColor
+ */
 @Composable
 private fun ColorItem(
     colorHex: String,
@@ -207,6 +252,21 @@ private fun ColorItem(
     }
 }
 
+/**
+ * Панель действий редактора активности.
+ *
+ * Отображает кнопки управления в зависимости от режима:
+ * - Режим создания: кнопки "Отмена" и "Добавить"
+ * - Режим редактирования: кнопка удаления, "Отмена" и "Сохранить"
+ *
+ * @param activity Редактируемая активность или null при создании
+ * @param name Текущее название активности для проверки валидности
+ * @param onSave Callback при сохранении
+ * @param onDelete Callback при удалении
+ * @param onDismiss Callback при отмене
+ *
+ * @see ActivityEditor
+ */
 @Composable
 private fun ActionButtons(
     activity: Activity?,
@@ -252,6 +312,16 @@ private fun ActionButtons(
     }
 }
 
+/**
+ * Сохраняет активность с валидацией данных.
+ *
+ * Проверяет, что название не пустое, и вызывает callback сохранения.
+ *
+ * @param activity Исходная активность или null при создании
+ * @param name Название активности
+ * @param color Цвет активности
+ * @param onSave Callback для сохранения валидной активности
+ */
 private fun saveActivity(
     activity: Activity?,
     name: String,
@@ -268,6 +338,11 @@ private fun saveActivity(
     }
 }
 
+/**
+ * Генерирует случайный цвет из предопределенной палитры.
+ *
+ * @return Случайный цвет в HEX-формате
+ */
 private fun generateRandomColor(): String {
     val colors = listOf(
         "#FF5252", "#FF9800", "#FFEB3B", "#4CAF50",

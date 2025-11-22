@@ -7,22 +7,96 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.*
 
+/**
+ * Интерфейс состояния секундомера.
+ *
+ * Определяет контракт для управления секундомером и отслеживания его состояния.
+ * Используется для разделения логики состояния и UI компонентов.
+ *
+ * @property isRunning Флаг, указывающий запущен ли секундомер в данный момент
+ * @property displayTime Текущее отображаемое время в миллисекундах
+ * @property selectedActivityId ID выбранной активности или null если не выбрана
+ * @property activityLogs Список временных записей для отображения истории
+ * @property isActivityTrackingEnabled Включен ли трекинг активностей
+ * @property inactiveTime Общее время, проведенное в состоянии паузы/бездействия
+ *
+ * @see rememberStopwatchState
+ * @see TimeRecord
+ * @see Activity
+ */
 interface StopwatchState {
     val isRunning: Boolean
     val displayTime: Long
     val selectedActivityId: String?
     val activityLogs: List<TimeRecord>
     val isActivityTrackingEnabled: Boolean
-    val inactiveTime: Long // Время проведенное на паузе
+    val inactiveTime: Long
 
+    /**
+     * Запускает секундомер.
+     *
+     * Если секундомер был на паузе, добавляет запись о бездействии.
+     * Создает запись START или CONTINUE в зависимости от предыдущего состояния.
+     */
     fun start()
+
+    /**
+     * Приостанавливает секундомер.
+     *
+     * Сохраняет текущее время и создает запись PAUSE.
+     * Запоминает время начала паузы для последующего учета бездействия.
+     */
     fun pause()
+
+    /**
+     * Сбрасывает секундомер.
+     *
+     * В режиме работы: сбрасывает время, но продолжает отсчет.
+     * В режиме паузы: полностью обнуляет состояние.
+     * Создает запись RESET.
+     */
     fun reset()
+
+    /**
+     * Устанавливает выбранную активность.
+     *
+     * При смене активности во время работы автоматически завершает предыдущую
+     * активность и начинает новую. Сбрасывает время для новой активности.
+     *
+     * @param activityId ID активности или null для сброса выбора
+     */
     fun setSelectedActivity(activityId: String?)
+
+    /**
+     * Очищает историю временных записей.
+     *
+     * Удаляет все записи о работе секундомера и сбрасывает счетчик бездействия.
+     */
     fun clearLogs()
+
+    /**
+     * Включает или отключает трекинг активностей.
+     *
+     * При отключении сбрасывает выбранную активность.
+     *
+     * @param enabled true для включения трекинга, false для отключения
+     */
     fun setActivityTrackingEnabled(enabled: Boolean)
 }
 
+/**
+ * Создает и запоминает состояние секундомера.
+ *
+ * Фабричная функция, которая инициализирует и управляет жизненным циклом
+ * состояния секундомера. Использует Compose runtime для реактивного обновления UI.
+ *
+ * @param repository Репозиторий для загрузки и сохранения данных
+ * @return Экземпляр [StopwatchState] для использования в композиции
+ *
+ * @sample StopwatchScreen
+ * @see StopwatchState
+ * @see ActivityRepository
+ */
 @Composable
 fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
     var isRunning by remember { mutableStateOf(false) }

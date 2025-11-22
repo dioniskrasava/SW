@@ -18,6 +18,27 @@ import app.sw.util.formatTime
 import app.sw.util.formatTimeHumanReadable
 import app.sw.util.parseColor
 
+/**
+ * Главный экран приложения с секундомером и элементами управления.
+ *
+ * Отображает интерфейс секундомера включая:
+ * - Таймер с текущим временем
+ * - Кнопки управления (старт, пауза, сброс)
+ * - Выбор активности (если включен трекинг)
+ * - Историю работы (если есть записи)
+ * - Кнопку перехода в настройки
+ *
+ * @param stopwatchState Состояние секундомера для управления таймером
+ * @param repository Репозиторий для загрузки активностей
+ * @param onSettingsClick Callback для перехода в настройки
+ * @param modifier Модификатор для настройки layout
+ *
+ * @sample StopwatchApp
+ * @see StopwatchState
+ * @see ActivityRepository
+ * @see ActivitySelector
+ * @see ControlButtons
+ */
 @Composable
 fun StopwatchScreen(
     stopwatchState: StopwatchState,
@@ -50,7 +71,7 @@ fun StopwatchScreen(
             SettingsButton(onClick = onSettingsClick)
         }
 
-       // Spacer(modifier = Modifier.height(40.dp))
+        Spacer(modifier = Modifier.height(40.dp))
 
         // Если включен трекинг активностей, показываем выбор активности
         if (stopwatchState.isActivityTrackingEnabled) {
@@ -64,8 +85,7 @@ fun StopwatchScreen(
         // Кнопки управления секундомером
         ControlButtons(stopwatchState = stopwatchState)
 
-        // В функции StopwatchScreen заменим блок с логами на:
-// Логи активности (только если включен трекинг)
+        // Логи активности (только если включен трекинг)
         if (stopwatchState.isActivityTrackingEnabled && stopwatchState.activityLogs.isNotEmpty()) {
             Spacer(modifier = Modifier.height(24.dp))
             Text(
@@ -89,7 +109,7 @@ fun StopwatchScreen(
                 logs = stopwatchState.activityLogs,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 100.dp, max = 400.dp) // Теперь можно прокручивать все логи
+                    .heightIn(min = 100.dp, max = 400.dp)
             )
 
             Spacer(modifier = Modifier.height(12.dp))
@@ -102,6 +122,12 @@ fun StopwatchScreen(
     }
 }
 
+/**
+ * Отображает текущее время секундомера.
+ *
+ * @param displayTime Время в миллисекундах для отображения
+ * @see formatTime
+ */
 @Composable
 private fun TimeDisplay(displayTime: Long) {
     Text(
@@ -111,6 +137,11 @@ private fun TimeDisplay(displayTime: Long) {
     )
 }
 
+/**
+ * Кнопка перехода в настройки приложения.
+ *
+ * @param onClick Callback при нажатии на кнопку
+ */
 @Composable
 private fun SettingsButton(
     onClick: () -> Unit
@@ -132,6 +163,14 @@ private fun SettingsButton(
     }
 }
 
+/**
+ * Группа кнопок управления секундомером.
+ *
+ * @param stopwatchState Состояние для управления кнопками
+ * @see StartButton
+ * @see PauseButton
+ * @see ResetButton
+ */
 @Composable
 private fun ControlButtons(stopwatchState: StopwatchState) {
     Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
@@ -141,6 +180,11 @@ private fun ControlButtons(stopwatchState: StopwatchState) {
     }
 }
 
+/**
+ * Кнопка запуска секундомера.
+ *
+ * @param stopwatchState Состояние для проверки доступности кнопки
+ */
 @Composable
 private fun StartButton(stopwatchState: StopwatchState) {
     StopwatchButton(
@@ -150,6 +194,11 @@ private fun StartButton(stopwatchState: StopwatchState) {
     )
 }
 
+/**
+ * Кнопка паузы секундомера.
+ *
+ * @param stopwatchState Состояние для проверки доступности кнопки
+ */
 @Composable
 private fun PauseButton(stopwatchState: StopwatchState) {
     StopwatchButton(
@@ -159,6 +208,11 @@ private fun PauseButton(stopwatchState: StopwatchState) {
     )
 }
 
+/**
+ * Кнопка сброса секундомера.
+ *
+ * @param stopwatchState Состояние для управления сбросом
+ */
 @Composable
 private fun ResetButton(stopwatchState: StopwatchState) {
     StopwatchButton(
@@ -168,6 +222,18 @@ private fun ResetButton(stopwatchState: StopwatchState) {
     )
 }
 
+/**
+ * Компонент выбора активности из списка.
+ *
+ * Отображает выпадающий список доступных активностей и позволяет выбрать
+ * текущую активность для трекинга. Показывается только при включенном трекинге.
+ *
+ * @param stopwatchState Состояние для управления выбранной активностью
+ * @param repository Репозиторий для загрузки списка активностей
+ *
+ * @see Activity
+ * @see DropdownMenu
+ */
 @Composable
 private fun ActivitySelector(
     stopwatchState: StopwatchState,

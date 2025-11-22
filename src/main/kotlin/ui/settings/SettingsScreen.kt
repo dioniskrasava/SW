@@ -12,6 +12,25 @@ import app.sw.data.model.Activity
 import app.sw.data.repository.ActivityRepository
 import app.sw.ui.main.StopwatchState
 
+/**
+ * Главный экран настроек приложения с вкладками.
+ *
+ * Предоставляет интерфейс для настройки различных аспектов приложения:
+ * - Основные настройки (включение трекинга активностей)
+ * - Управление активностями (создание, редактирование, удаление)
+ *
+ * Использует TabRow для организации настроек по категориям.
+ *
+ * @param stopwatchState Состояние секундомера для синхронизации настроек
+ * @param repository Репозиторий для управления данными активностей
+ * @param onBackClick Callback для возврата на главный экран
+ * @param modifier Модификатор для настройки layout
+ *
+ * @sample StopwatchApp
+ * @see GeneralSettingsTab
+ * @see ActivitiesManagementTab
+ * @see StopwatchState
+ */
 @Composable
 fun SettingsScreen(
     stopwatchState: StopwatchState,
@@ -67,6 +86,18 @@ fun SettingsScreen(
     }
 }
 
+/**
+ * Вкладка основных настроек приложения.
+ *
+ * Содержит переключатели и настройки, влияющие на базовую функциональность:
+ * - Включение/выключение трекинга активностей
+ * - Отображение логов на главном экране
+ *
+ * @param stopwatchState Состояние для управления настройками
+ *
+ * @see SettingsScreen
+ * @see StopwatchState
+ */
 @Composable
 private fun GeneralSettingsTab(
     stopwatchState: StopwatchState
@@ -124,6 +155,23 @@ private fun GeneralSettingsTab(
     }
 }
 
+/**
+ * Вкладка управления активностями.
+ *
+ * Предоставляет интерфейс для CRUD операций с активностями:
+ * - Просмотр списка активностей
+ * - Добавление новых активностей
+ * - Редактирование существующих
+ * - Удаление активностей
+ * - Выбор текущей активности
+ *
+ * @param stopwatchState Состояние для синхронизации выбранной активности
+ * @param repository Репозиторий для сохранения изменений
+ *
+ * @see SettingsScreen
+ * @see ActivityManagementItem
+ * @see ActivityEditor
+ */
 @Composable
 private fun ActivitiesManagementTab(
     stopwatchState: StopwatchState,

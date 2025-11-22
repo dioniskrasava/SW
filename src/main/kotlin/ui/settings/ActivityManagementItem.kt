@@ -14,6 +14,28 @@ import androidx.compose.ui.unit.dp
 import app.sw.data.model.Activity
 import app.sw.util.parseColor
 
+/**
+ * Composable элемент для отображения активности в списке управления.
+ *
+ * Отображает карточку активности с:
+ * - Цветным индикатором активности
+ * - Названием активности
+ * - Индикатором выбранной активности
+ * - Кнопкой редактирования
+ *
+ * Поддерживает взаимодействия:
+ * - Выбор активности по клику на карточку
+ * - Редактирование по клику на иконку
+ *
+ * @param activity Активность для отображения
+ * @param isSelected Флаг, указывающий выбрана ли данная активность
+ * @param onSelect Callback при выборе активности
+ * @param onEdit Callback при редактировании активности
+ *
+ * @sample ActivitiesManagementTab
+ * @see Activity
+ * @see parseColor
+ */
 @Composable
 fun ActivityManagementItem(
     activity: Activity,
