@@ -32,6 +32,8 @@ interface StopwatchState {
     val isActivityTrackingEnabled: Boolean
     val inactiveTime: Long
 
+
+
     /**
      * Запускает секундомер.
      *
@@ -102,7 +104,6 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
     var isRunning by remember { mutableStateOf(false) }
     var displayTime by remember { mutableStateOf(0L) }
     var accumulatedTime by remember { mutableStateOf(0L) }
-    var startTime by remember { mutableStateOf(0L) }
     var selectedActivityId by remember { mutableStateOf<String?>(null) }
     var currentRecordId by remember { mutableStateOf<String?>(null) }
     var inactiveTime by remember { mutableStateOf(0L) }
@@ -113,6 +114,10 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
 
     val coroutineScope = rememberCoroutineScope()
     var job by remember { mutableStateOf<Job?>(null) }
+
+    // ДОБАВЬТЕ ЭТИ ДВЕ ПЕРЕМЕННЫЕ
+    var startTime by remember { mutableStateOf(0L) }
+    var baseDuration by remember { mutableStateOf(0L) }
 
     // Функция для сохранения настроек
     fun saveSettings(newSettings: AppSettings) {
@@ -172,79 +177,86 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
                 get() = inactiveTime
 
             override fun start() {
-                if (!isRunning) {
-                    // Если было время паузы, добавляем запись о бездействии
-                    if (lastPauseStart > 0) {
-                        val pauseDuration = System.currentTimeMillis() - lastPauseStart
-                        if (pauseDuration > 1000) { // Только если пауза была больше 1 секунды
-                            addInactiveRecord(pauseDuration)
-                        }
-                        lastPauseStart = 0
+                if (isRunning) return
+
+                // 1. Обработка времени бездействия с момента последней паузы
+                if (lastPauseStart > 0) {
+                    val pauseDuration = System.currentTimeMillis() - lastPauseStart
+                    if (pauseDuration >= 1000) {
+                        addInactiveRecord(pauseDuration)
                     }
-
-                    isRunning = true
-                    startTime = System.currentTimeMillis() - accumulatedTime
-
-                    // Определяем тип записи: начало или продолжение
-                    val recordType = if (accumulatedTime > 0) RecordType.CONTINUE else RecordType.START
-
-                    // Создаем запись если активность выбрана
-                    selectedActivityId?.let { activityId ->
-                        val activities = repository.loadActivities()
-                        val activity = activities.find { it.id == activityId }
-                        activity?.let {
-                            addRecord(activityId, it.name, recordType)
-                        }
-                    }
-
-                    job = coroutineScope.launch {
-                        while (isRunning) {
-                            displayTime = System.currentTimeMillis() - startTime
-                            delay(10)
-                        }
-                    }
+                    lastPauseStart = 0
                 }
-            }
 
-            override fun pause() {
-                isRunning = false
-                job?.cancel()
-                accumulatedTime = displayTime
-                lastPauseStart = System.currentTimeMillis()
+                // 2. Устанавливаем флаг и фиксируем МОМЕНТ АБСОЛЮТНОГО СТАРТА
+                isRunning = true
+                // Мы фиксируем, когда мы начали отсчет (накопленное время уже сохранено в accumulatedTime)
+                startTime = System.currentTimeMillis()
 
-                // Сохраняем запись если активность выбрана
+                // 3. Определяем тип записи
+                val recordType = if (accumulatedTime > 0) RecordType.CONTINUE else RecordType.START
+
+                // 4. Логирование
                 selectedActivityId?.let { activityId ->
                     val activities = repository.loadActivities()
                     val activity = activities.find { it.id == activityId }
-                    activity?.let {
-                        addRecord(activityId, it.name, RecordType.PAUSE, displayTime)
-                    }
+                    activity?.let { addRecord(activityId, it.name, recordType) }
+                }
+
+                // 5. Запускаем точный таймер (переходим к Шагу 3)
+                startTickingJob()
+            }
+
+
+            override fun pause() {
+                if (!isRunning) return
+
+                // 1. Отменяем работу корутины
+                isRunning = false
+                job?.cancel()
+
+                // 2. Вычисляем точную длительность и сохраняем ее как накопленное время (базу)
+                val elapsedSinceStart = System.currentTimeMillis() - startTime
+                accumulatedTime += elapsedSinceStart // ВАЖНО: прибавляем прошедшее время к старой базе
+                displayTime = accumulatedTime // Обновляем дисплей на окончательное, точное время
+
+                // 3. Фиксируем время паузы для трекинга бездействия
+                lastPauseStart = System.currentTimeMillis()
+
+                // 4. Логирование
+                selectedActivityId?.let { activityId ->
+                    val activities = repository.loadActivities()
+                    val activity = activities.find { it.id == activityId }
+                    activity?.let { addRecord(activityId, it.name, RecordType.PAUSE, displayTime) }
                 }
             }
 
-            override fun reset() {
-                if (isRunning) {
-                    // Если секундомер работает - сбрасываем время, но продолжаем отсчет
-                    val resetDuration = displayTime
-                    accumulatedTime = 0
-                    startTime = System.currentTimeMillis()
-                    displayTime = 0
 
-                    // Добавляем запись о сбросе
+            override fun reset() {
+                // 1. Вычисляем длительность для логирования
+                val resetDuration = if (isRunning) accumulatedTime + (System.currentTimeMillis() - startTime) else displayTime
+
+                // 2. Очищаем все счетчики
+                accumulatedTime = 0L
+                displayTime = 0L
+                lastPauseStart = 0L
+
+                // 3. Если таймер запущен, сброс происходит "на лету"
+                if (isRunning) {
+                    // Просто фиксируем новый момент старта, но база уже 0
+                    startTime = System.currentTimeMillis()
+                } else {
+                    // Если не запущен, отменяем работу корутины (для гарантии)
+                    job?.cancel()
+                }
+
+                // 4. Логирование
+                if (resetDuration > 0) {
                     selectedActivityId?.let { activityId ->
                         val activities = repository.loadActivities()
                         val activity = activities.find { it.id == activityId }
-                        activity?.let {
-                            addRecord(activityId, it.name, RecordType.RESET, resetDuration)
-                        }
+                        activity?.let { addRecord(activityId, it.name, RecordType.RESET, resetDuration) }
                     }
-                } else {
-                    // Если секундомер не работает - полный сброс
-                    job?.cancel()
-                    accumulatedTime = 0
-                    displayTime = 0
-                    currentRecordId = null
-                    lastPauseStart = 0
                 }
             }
 
@@ -287,6 +299,24 @@ fun rememberStopwatchState(repository: ActivityRepository): StopwatchState {
                 if (!enabled) {
                     // При отключении трекинга сбрасываем выбранную активность
                     selectedActivityId = null
+                }
+            }
+
+            private fun startTickingJob() {
+                job?.cancel() // Отменяем старую, если была
+                job = coroutineScope.launch {
+                    // Мы используем более долгий интервал (50 мс), так как нам не нужно тикать каждую 1 мс.
+                    // Точность обеспечивается System.currentTimeMillis(), а не delay().
+                    while (isRunning) {
+
+                        // Время, прошедшее с момента, как мы нажали START
+                        val elapsedSinceStart = System.currentTimeMillis() - startTime
+
+                        // Точное время = (Накопленная база) + (Время, прошедшее с момента старта)
+                        displayTime = accumulatedTime + elapsedSinceStart
+
+                        delay(50) // Задержка для плавного обновления UI
+                    }
                 }
             }
         }

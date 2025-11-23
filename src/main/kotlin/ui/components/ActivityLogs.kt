@@ -1,34 +1,29 @@
 package app.sw.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.sw.data.model.RecordType
 import app.sw.data.model.TimeRecord
-import app.sw.util.formatTime
 import app.sw.util.formatTimeHumanReadable
+import java.text.SimpleDateFormat
+import java.util.*
 
 /**
- * Composable компонент для отображения истории активностей и временных записей.
- *
- * Отображает список временных записей в виде прокручиваемого списка с различным
- * визуальным оформлением в зависимости от типа записи.
- *
- * @param logs Список временных записей для отображения
- * @param modifier Модификатор для настройки layout и поведения компонента
- *
- * @sample StopwatchScreen
- * @see TimeRecord
- * @see RecordType
- * @see LogItem
+ * Обновленный список логов с современным дизайном.
  */
 @Composable
 fun ActivityLogs(
@@ -41,9 +36,9 @@ fun ActivityLogs(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Нет записей",
-                color = MaterialTheme.colors.onBackground.copy(alpha = 0.5f),
-                style = MaterialTheme.typography.body2
+                text = "История пуста",
+                color = MaterialTheme.colors.onBackground.copy(alpha = 0.3f),
+                style = MaterialTheme.typography.body1
             )
         }
         return
@@ -51,91 +46,113 @@ fun ActivityLogs(
 
     LazyColumn(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp), // Чуть больше воздуха между карточками
+        contentPadding = PaddingValues(bottom = 16.dp)
     ) {
         items(logs) { log ->
-            LogItem(log = log)
+            ModernLogItem(log = log)
         }
     }
 }
 
-/**
- * Composable компонент для отображения отдельной записи в логе.
- *
- * Визуализирует одну временную запись с учетом ее типа:
- * - Разные цвета и префиксы для различных типов событий
- * - Отображение продолжительности для соответствующих типов записей
- * - Специальное оформление для периодов бездействия
- *
- * @param log Временная запись для отображения
- *
- * @see TimeRecord
- * @see RecordType
- * @see formatTimeHumanReadable
- */
 @Composable
-private fun LogItem(log: TimeRecord) {
+private fun ModernLogItem(log: TimeRecord) {
+    // Определяем стиль в зависимости от типа записи
+    val (icon, color, label) = when (log.type) {
+        RecordType.START -> Triple(Icons.Default.PlayArrow, Color(0xFF4CAF50), "Запуск")
+        RecordType.CONTINUE -> Triple(Icons.Default.PlayArrow, Color(0xFF81C784), "Продолжение")
+        RecordType.PAUSE -> Triple(Icons.Default.Pause, Color(0xFFFF9800), "Пауза") // Оранжевый
+        RecordType.RESET -> Triple(Icons.Default.Refresh, Color(0xFFE57373), "Сброс") // Мягкий красный
+        RecordType.COMPLETE -> Triple(Icons.Default.CheckCircle, Color(0xFF2196F3), "Завершено") // Синий
+        RecordType.INACTIVE -> Triple(Icons.Default.TimerOff, Color.Gray, "Бездействие")
+    }
+
+    // Форматируем время начала для отображения (например "14:30")
+    val startTimeStr = rememberFormattedTime(log.startTime)
+
     Card(
-        backgroundColor = when (log.type) {
-            RecordType.INACTIVE -> MaterialTheme.colors.background
-            else -> MaterialTheme.colors.surface
-        },
-        elevation = if (log.type == RecordType.INACTIVE) 0.dp else 1.dp,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 4.dp)
+        elevation = 2.dp,
+        shape = MaterialTheme.shapes.medium,
+        backgroundColor = MaterialTheme.colors.surface,
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+            modifier = Modifier.height(IntrinsicSize.Min) // Чтобы высота полоски совпадала с карточкой
         ) {
-            // Префикс и текст в зависимости от типа
-            val (prefix, mainText, typeText) = when (log.type) {
-                RecordType.START -> Triple("--", "${log.activityName}", "начало")
-                RecordType.PAUSE -> Triple("==", "${log.activityName}", "пауза")
-                RecordType.RESET -> Triple("--", "${log.activityName}", "сброс")
-                RecordType.CONTINUE -> Triple("--", "${log.activityName}", "продолжение")
-                RecordType.COMPLETE -> Triple("++", "${log.activityName}", "завершение")
-                RecordType.INACTIVE -> Triple("••", "Пауза", "бездействие")
-            }
+            // 1. Цветная полоска слева (Акцент)
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(6.dp)
+                    .background(color)
+            )
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = "$prefix $mainText $prefix",
-                    color = when (log.type) {
-                        RecordType.INACTIVE -> MaterialTheme.colors.onBackground.copy(alpha = 0.5f)
-                        else -> MaterialTheme.colors.onSurface
-                    },
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp
-                )
+            // 2. Основной контент
+            Row(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Левая часть: Иконка и Название
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // Круглый фон для иконки
+                    Box(
+                        modifier = Modifier
+                            .size(32.dp)
+                            .background(color.copy(alpha = 0.15f), shape = MaterialTheme.shapes.small),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = color,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
 
-                if (log.type != RecordType.START && log.type != RecordType.CONTINUE) {
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = formatTimeHumanReadable(log.duration),
-                        color = when (log.type) {
-                            RecordType.INACTIVE -> MaterialTheme.colors.onBackground.copy(alpha = 0.4f)
-                            else -> MaterialTheme.colors.onSurface.copy(alpha = 0.8f)
-                        },
-                        fontSize = 12.sp
-                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    Column {
+                        Text(
+                            text = if (log.type == RecordType.INACTIVE) "Простой" else log.activityName,
+                            style = MaterialTheme.typography.subtitle2,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colors.onSurface
+                        )
+                        // Мелкий текст: Время события и тип
+                        Text(
+                            text = "$startTimeStr • $label",
+                            style = MaterialTheme.typography.caption,
+                            color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                        )
+                    }
+                }
+
+                // Правая часть: Длительность (если есть)
+                if (log.duration > 0) {
+                    Surface(
+                        color = MaterialTheme.colors.background, // Чуть темнее фон для времени
+                        shape = MaterialTheme.shapes.small,
+                        modifier = Modifier.padding(start = 8.dp)
+                    ) {
+                        Text(
+                            text = formatTimeHumanReadable(log.duration),
+                            style = MaterialTheme.typography.body2,
+                            fontFamily = FontFamily.Monospace, // Моноширинный шрифт для цифр
+                            color = MaterialTheme.colors.onBackground,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
                 }
             }
-
-            Text(
-                text = "($typeText)",
-                color = when (log.type) {
-                    RecordType.PAUSE -> Color(0xFFFF9800) // Оранжевый для паузы
-                    RecordType.RESET -> Color(0xFFF44336) // Красный для сброса
-                    RecordType.CONTINUE -> Color(0xFF4CAF50) // Зеленый для продолжения
-                    RecordType.INACTIVE -> MaterialTheme.colors.onBackground.copy(alpha = 0.3f)
-                    else -> MaterialTheme.colors.onSurface.copy(alpha = 0.6f)
-                },
-                fontSize = 11.sp,
-                style = MaterialTheme.typography.caption
-            )
         }
     }
+}
+
+// Вспомогательная функция для форматирования времени (hh:mm:ss)
+@Composable
+fun rememberFormattedTime(timestamp: Long): String {
+    return java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()).format(Date(timestamp))
 }
