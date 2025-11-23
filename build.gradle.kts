@@ -25,8 +25,8 @@ compose.desktop {
 
         nativeDistributions {
             packageName = "StopwatchApp"
-            packageVersion = "1.0.3"
-            description = "Приложение-секундомер с трекингом активностей"
+            packageVersion = "1.0.4"
+            description = "(v1.0.4) Приложение-секундомер с трекингом активностей"
 
             linux {
                 appCategory = "Utility"

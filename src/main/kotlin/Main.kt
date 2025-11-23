@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import app.sw.data.model.AppSettings
 import app.sw.data.repository.ActivityRepository
 import app.sw.ui.main.StopwatchApp
 import app.sw.ui.main.rememberStopwatchState
@@ -45,17 +46,28 @@ fun main() = application {
     val repository = remember { ActivityRepository() }
     val stopwatchState = rememberStopwatchState(repository)
 
-    // Загружаем настройки для начальных размеров окна
-    val settings = repository.loadSettings()
+    // Загружаем настройки только для инициализации
+    // (дальше мы будем читать актуальные настройки внутри приложения)
+    val initialSettings = repository.loadSettings()
+
+    // Создаем состояние окна здесь
+    val windowState = rememberWindowState(
+        width = initialSettings.mainWindowWidth.dp,
+        height = initialSettings.mainWindowHeight.dp
+    )
 
     Window(
-        title = "StopWatch",
-        state = rememberWindowState(
-            width = settings.mainWindowWidth.dp,
-            height = settings.mainWindowHeight.dp
-        ),
+        title = "StopWatch v1.0.4",
+        state = windowState,
         onCloseRequest = ::exitApplication
     ) {
+
+        // МИНИМАЛЬНЫЙ РАЗМЕР ОКНА
+        window.minimumSize = Dimension(
+            AppSettings.MIN_WINDOW_WIDTH,
+            AppSettings.MIN_WINDOW_HEIGHT
+        )
+
         MaterialTheme(
             colors = darkColors(
                 primary = PrimaryBlue,
@@ -69,44 +81,8 @@ fun main() = application {
             StopwatchApp(
                 stopwatchState = stopwatchState,
                 repository = repository,
-                onWindowResize = { width, height ->
-                    window.minimumSize = Dimension(width, height)
-                    window.size = Dimension(width, height)
-                }
+                windowState = windowState
             )
         }
-    }
-}
-
-/**
- * Preview-функция для разработки в Android Studio.
- *
- * Позволяет просматривать и тестировать UI в режиме предварительного просмотра
- * без запуска всего приложения. Использует те же настройки темы, что и основное приложение.
- *
- * @sample MainKt.Preview
- * @see StopwatchApp
- */
-@Composable
-@Preview
-fun AppPreview() {
-    val repository = ActivityRepository()
-    val stopwatchState = rememberStopwatchState(repository)
-
-    MaterialTheme(
-        colors = darkColors(
-            primary = PrimaryBlue,
-            background = DarkBackground,
-            surface = DarkSurface,
-            onPrimary = androidx.compose.ui.graphics.Color.White,
-            onBackground = TextOnBackground,
-            onSurface = androidx.compose.ui.graphics.Color.White
-        )
-    ) {
-        StopwatchApp(
-            stopwatchState = stopwatchState,
-            repository = repository,
-            onWindowResize = { _, _ -> }
-        )
     }
 }

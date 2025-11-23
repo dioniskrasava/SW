@@ -8,6 +8,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.sw.data.repository.ActivityRepository
 
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.rememberScrollbarAdapter
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+
 /**
  * Вкладка настроек размеров окон приложения.
  *
@@ -36,70 +41,91 @@ fun WindowSettingsTab(
     var settingsWindowWidth by remember { mutableStateOf(settings.settingsWindowWidth.toString()) }
     var settingsWindowHeight by remember { mutableStateOf(settings.settingsWindowHeight.toString()) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text(
-            "Настройки размеров окон",
-            style = MaterialTheme.typography.h6,
-            color = MaterialTheme.colors.onBackground
-        )
+    // Создаем состояние прокрутки
+    val scrollState = rememberScrollState()
 
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Настройки главного окна
-        WindowSizeSection(
-            title = "Главное окно (секундомер)",
-            description = "Размер окна в основном режиме работы",
-            widthValue = mainWindowWidth,
-            heightValue = mainWindowHeight,
-            onWidthChange = { mainWindowWidth = it },
-            onHeightChange = { mainWindowHeight = it }
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        // Настройки окна настроек
-        WindowSizeSection(
-            title = "Окно настроек",
-            description = "Размер окна в расширенном режиме настроек",
-            widthValue = settingsWindowWidth,
-            heightValue = settingsWindowHeight,
-            onWidthChange = { settingsWindowWidth = it },
-            onHeightChange = { settingsWindowHeight = it }
-        )
-
-        Spacer(modifier = Modifier.height(32.dp))
-
-        // Кнопка сохранения
-        Button(
-            onClick = {
-                // Обновляем настройки
-                val newSettings = settings.copy(
-                    mainWindowWidth = mainWindowWidth.toIntOrNull() ?: 400,
-                    mainWindowHeight = mainWindowHeight.toIntOrNull() ?: 140,
-                    settingsWindowWidth = settingsWindowWidth.toIntOrNull() ?: 500,
-                    settingsWindowHeight = settingsWindowHeight.toIntOrNull() ?: 500
-                )
-                settings = newSettings
-                repository.saveSettings(newSettings)
-            },
-            modifier = Modifier.align(Alignment.End)
+    Box(modifier = Modifier.fillMaxSize()){
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .verticalScroll(scrollState) // <-- Привязываем скролл к колонке
+                .padding(end = 12.dp) // <-- Отступ справа, чтобы текст не наезжал на скроллбар
         ) {
-            Text("Сохранить размеры")
+            Text(
+                "Настройки размеров окон",
+                style = MaterialTheme.typography.h6,
+                color = MaterialTheme.colors.onBackground
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Настройки главного окна
+            WindowSizeSection(
+                title = "Главное окно (секундомер)",
+                description = "Размер окна в основном режиме работы",
+                widthValue = mainWindowWidth,
+                heightValue = mainWindowHeight,
+                onWidthChange = { mainWindowWidth = it },
+                onHeightChange = { mainWindowHeight = it }
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Настройки окна настроек
+            WindowSizeSection(
+                title = "Окно настроек",
+                description = "Размер окна в расширенном режиме настроек",
+                widthValue = settingsWindowWidth,
+                heightValue = settingsWindowHeight,
+                onWidthChange = { settingsWindowWidth = it },
+                onHeightChange = { settingsWindowHeight = it }
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            // Кнопка сохранения
+            Button(
+                onClick = {
+                    // Обновляем настройки
+                    val newSettings = settings.copy(
+                        mainWindowWidth = mainWindowWidth.toIntOrNull() ?: 400,
+                        mainWindowHeight = mainWindowHeight.toIntOrNull() ?: 140,
+                        settingsWindowWidth = settingsWindowWidth.toIntOrNull() ?: 500,
+                        settingsWindowHeight = settingsWindowHeight.toIntOrNull() ?: 500
+                    )
+                    settings = newSettings
+                    repository.saveSettings(newSettings)
+                },
+                modifier = Modifier.align(Alignment.End)
+            ) {
+                Text("Сохранить размеры")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Информация о применении изменений
+            Text(
+                "Изменения вступят в силу при следующем открытии соответствующего окна",
+                style = MaterialTheme.typography.caption,
+                color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
+            )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Информация о применении изменений
-        Text(
-            "Изменения вступят в силу при следующем открытии соответствующего окна",
-            style = MaterialTheme.typography.caption,
-            color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
+        // Добавляем САМ СКРОЛЛБАР
+        VerticalScrollbar(
+            adapter = rememberScrollbarAdapter(scrollState), // Связываем со scrollState колонки
+            modifier = Modifier
+                .align(Alignment.CenterEnd) // Прижимаем к правому краю
+                .fillMaxHeight()
         )
     }
+
+
+
+
+
+
 }
 
 /**

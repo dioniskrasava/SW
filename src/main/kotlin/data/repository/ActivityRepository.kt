@@ -29,10 +29,24 @@ import java.io.File
  * @see ListSerializer
  */
 class ActivityRepository {
-    private val activitiesFile = File("activities.json")
-    private val timeRecordsFile = File("time_records.json")
-    private val settingsFile = File("app_settings.json")
+    // 1. Определяем папку, где будут лежать данные
+    private val dataDirectory = File("sw")
+
+    // 2. Используем конструктор File(родитель, имя_файла),
+    // чтобы привязать файлы к этой папке
+    private val activitiesFile = File(dataDirectory, "activities.json")
+    private val timeRecordsFile = File(dataDirectory, "time_records.json")
+    private val settingsFile = File(dataDirectory, "app_settings.json")
+
     private val json = Json { prettyPrint = true }
+
+    // 3. Блок init выполняется сразу при создании класса.
+    // Здесь мы проверяем и создаем папку.
+    init {
+        if (!dataDirectory.exists()) {
+            dataDirectory.mkdirs() // mkdirs() создает папку (и все родительские, если надо)
+        }
+    }
 
     /**
      * Сохраняет список активностей в файл.

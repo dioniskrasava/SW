@@ -1,8 +1,10 @@
 package app.sw.ui.main
 
+import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -46,80 +48,102 @@ fun StopwatchScreen(
     onSettingsClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colors.background)
-            .padding(20.dp)
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Верхняя строка: время и кнопка настроек на одном уровне
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+
+    // Выносим состояние скролла в переменную
+    val scrollState = rememberScrollState()
+
+
+    Box(modifier = modifier.fillMaxSize()) { // Обертка Box
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colors.background)
+                .padding(10.dp)
+                // Важно: отступ справа для скроллбара
+                .padding(end = 12.dp)
+                .verticalScroll(scrollState), // Используем нашу переменную
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Box(
-                modifier = Modifier
-                    .width(80.dp)
-                    .height(40.dp)
-            )
 
-            TimeDisplay(displayTime = stopwatchState.displayTime)
-
-            SettingsButton(onClick = onSettingsClick)
-        }
-
-        Spacer(modifier = Modifier.height(40.dp))
-
-        // Если включен трекинг активностей, показываем выбор активности
-        if (stopwatchState.isActivityTrackingEnabled) {
-            ActivitySelector(
-                stopwatchState = stopwatchState,
-                repository = repository
-            )
-            Spacer(modifier = Modifier.height(24.dp))
-        }
-
-        // Кнопки управления секундомером
-        ControlButtons(stopwatchState = stopwatchState)
-
-        // Логи активности (только если включен трекинг)
-        if (stopwatchState.isActivityTrackingEnabled && stopwatchState.activityLogs.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "История всех активностей:",
-                style = MaterialTheme.typography.subtitle1,
-                color = MaterialTheme.colors.onBackground
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Общее время бездействия
-            if (stopwatchState.inactiveTime > 0) {
-                Text(
-                    text = "Общее время пауз: ${formatTimeHumanReadable(stopwatchState.inactiveTime)}",
-                    style = MaterialTheme.typography.caption,
-                    color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f),
-                    modifier = Modifier.padding(bottom = 8.dp)
+            // Верхняя строка: время и кнопка настроек на одном уровне
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Box(
+                    modifier = Modifier
+                        .width(50.dp)
+                        .height(15.dp)
                 )
+
+                TimeDisplay(displayTime = stopwatchState.displayTime)
+
+                SettingsButton(onClick = onSettingsClick)
             }
 
-            ActivityLogs(
-                logs = stopwatchState.activityLogs,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 100.dp, max = 400.dp)
-            )
+            Spacer(modifier = Modifier.height(1.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
-            StopwatchButton(
-                text = "Очистить историю",
-                onClick = { stopwatchState.clearLogs() },
-                enabled = true
-            )
+
+
+            // Кнопки управления секундомером
+            ControlButtons(stopwatchState = stopwatchState)
+
+
+            // Если включен трекинг активностей, показываем выбор активности
+            if (stopwatchState.isActivityTrackingEnabled) {
+                ActivitySelector(
+                    stopwatchState = stopwatchState,
+                    repository = repository
+                )
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            // Логи активности (только если включен трекинг)
+            if (stopwatchState.isActivityTrackingEnabled && stopwatchState.activityLogs.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "История всех активностей:",
+                    style = MaterialTheme.typography.subtitle1,
+                    color = MaterialTheme.colors.onBackground
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Общее время бездействия
+                if (stopwatchState.inactiveTime > 0) {
+                    Text(
+                        text = "Общее время пауз: ${formatTimeHumanReadable(stopwatchState.inactiveTime)}",
+                        style = MaterialTheme.typography.caption,
+                        color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+
+                ActivityLogs(
+                    logs = stopwatchState.activityLogs,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 100.dp, max = 400.dp)
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+                StopwatchButton(
+                    text = "Очистить историю",
+                    onClick = { stopwatchState.clearLogs() },
+                    enabled = true
+                )
+            }
         }
+
+        // Скроллбар для главного экрана
+        VerticalScrollbar(
+            adapter = rememberScrollbarAdapter(scrollState),
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxHeight()
+        )
     }
+
 }
 
 /**
@@ -149,14 +173,14 @@ private fun SettingsButton(
     TextButton(
         onClick = onClick,
         modifier = Modifier
-            .width(80.dp)
-            .height(40.dp),
+            .width(45.dp)
+            .height(50.dp),
         colors = ButtonDefaults.textButtonColors(
             contentColor = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
         )
     ) {
         Text(
-            text = "⋮",
+            text = "☰",
             fontSize = 28.sp,
             style = MaterialTheme.typography.h6
         )

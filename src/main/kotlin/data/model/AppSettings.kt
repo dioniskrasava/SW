@@ -27,12 +27,15 @@ import kotlinx.serialization.Serializable
 data class AppSettings(
     val isActivityTrackingEnabled: Boolean = false,
     val showLogsInMainScreen: Boolean = true,
-    val mainWindowWidth: Int = 400,
-    val mainWindowHeight: Int = 180,
+    val mainWindowWidth: Int = 350,
+    val mainWindowHeight: Int = 165,
     val settingsWindowWidth: Int = 500,
     val settingsWindowHeight: Int = 500,
 ) {
     companion object {
+        // --- КОНСТАНТЫ ОГРАНИЧЕНИЙ ОКНА ---
+        const val MIN_WINDOW_WIDTH = 310
+        const val MIN_WINDOW_HEIGHT = 165
         /**
          * Создает настройки по умолчанию.
          *
