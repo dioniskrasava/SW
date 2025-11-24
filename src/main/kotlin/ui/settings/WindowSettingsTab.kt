@@ -170,18 +170,40 @@ private fun WindowSizeSection(
             OutlinedTextField(
                 value = widthValue,
                 onValueChange = onWidthChange,
-                label = { Text(strings.width) },
+                label = {
+                    Text(
+                        strings.width,
+                        color = MaterialTheme.colors.onSurface
+                    )
+                },
                 modifier = Modifier.weight(1f),
-                singleLine = true
+                singleLine = true,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    textColor = MaterialTheme.colors.onSurface, // Цвет вводимого текста
+                    cursorColor = MaterialTheme.colors.primary, // Цвет курсора
+                    focusedBorderColor = MaterialTheme.colors.primary,
+                    unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                )
             )
 
             // Поле ввода высоты
             OutlinedTextField(
                 value = heightValue,
                 onValueChange = onHeightChange,
-                label = { Text(strings.height) },
+                label = {
+                    Text(
+                        strings.height,
+                        color = MaterialTheme.colors.onSurface
+                    )
+                },
                 modifier = Modifier.weight(1f),
-                singleLine = true
+                singleLine = true,
+                colors = TextFieldDefaults.outlinedTextFieldColors(
+                    textColor = MaterialTheme.colors.onSurface, // Цвет вводимого текста
+                    cursorColor = MaterialTheme.colors.primary, // Цвет курсора
+                    focusedBorderColor = MaterialTheme.colors.primary,
+                    unfocusedBorderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
+                )
             )
         }
 
