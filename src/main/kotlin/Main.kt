@@ -10,6 +10,8 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import app.sw.data.model.AppSettings
 import app.sw.data.repository.ActivityRepository
+import app.sw.i18n.LocalizationManager
+import app.sw.i18n.stringResource
 import app.sw.ui.main.StopwatchApp
 import app.sw.ui.main.rememberStopwatchState
 import java.awt.Dimension
@@ -46,9 +48,9 @@ fun main() = application {
     val repository = remember { ActivityRepository() }
     val stopwatchState = rememberStopwatchState(repository)
 
-    // Загружаем настройки только для инициализации
-    // (дальше мы будем читать актуальные настройки внутри приложения)
+    // Загружаем настройки и устанавливаем язык
     val initialSettings = repository.loadSettings()
+    LocalizationManager.setLanguage(initialSettings.language, repository)
 
     // Создаем состояние окна здесь
     val windowState = rememberWindowState(
@@ -57,7 +59,7 @@ fun main() = application {
     )
 
     Window(
-        title = "StopWatch v1.0.4",
+        title = stringResource { app_name }, // Используем локализованное название
         state = windowState,
         onCloseRequest = ::exitApplication
     ) {

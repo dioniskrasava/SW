@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.sw.data.model.Activity
 import app.sw.data.repository.ActivityRepository
+import app.sw.i18n.LocalizationManager
 import app.sw.ui.components.ActivityLogs
 import app.sw.ui.components.StopwatchButton
 import app.sw.util.formatTime
@@ -49,9 +50,10 @@ fun StopwatchScreen(
     modifier: Modifier = Modifier
 ) {
 
+    val strings = LocalizationManager.currentResources
+
     // Выносим состояние скролла в переменную
     val scrollState = rememberScrollState()
-
 
     Box(modifier = modifier.fillMaxSize()) { // Обертка Box
         Column(
@@ -84,11 +86,8 @@ fun StopwatchScreen(
 
             Spacer(modifier = Modifier.height(1.dp))
 
-
-
             // Кнопки управления секундомером
             ControlButtons(stopwatchState = stopwatchState)
-
 
             // Если включен трекинг активностей, показываем выбор активности
             if (stopwatchState.isActivityTrackingEnabled) {
@@ -103,7 +102,7 @@ fun StopwatchScreen(
             if (stopwatchState.isActivityTrackingEnabled && stopwatchState.activityLogs.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "История всех активностей:",
+                    text = strings.all_activities_history,
                     style = MaterialTheme.typography.subtitle1,
                     color = MaterialTheme.colors.onBackground
                 )
@@ -112,7 +111,7 @@ fun StopwatchScreen(
                 // Общее время бездействия
                 if (stopwatchState.inactiveTime > 0) {
                     Text(
-                        text = "Общее время пауз: ${formatTimeHumanReadable(stopwatchState.inactiveTime)}",
+                        text = "${strings.total_pause_time} ${formatTimeHumanReadable(stopwatchState.inactiveTime)}",
                         style = MaterialTheme.typography.caption,
                         color = MaterialTheme.colors.onBackground.copy(alpha = 0.6f),
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -128,7 +127,7 @@ fun StopwatchScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
                 StopwatchButton(
-                    text = "Очистить историю",
+                    text = strings.clear_history,
                     onClick = { stopwatchState.clearLogs() },
                     enabled = true
                 )
@@ -143,7 +142,6 @@ fun StopwatchScreen(
                 .fillMaxHeight()
         )
     }
-
 }
 
 /**
@@ -197,10 +195,12 @@ private fun SettingsButton(
  */
 @Composable
 private fun ControlButtons(stopwatchState: StopwatchState) {
+    val strings = LocalizationManager.currentResources
+
     Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-        StartButton(stopwatchState = stopwatchState)
-        PauseButton(stopwatchState = stopwatchState)
-        ResetButton(stopwatchState = stopwatchState)
+        StartButton(stopwatchState = stopwatchState, text = strings.start)
+        PauseButton(stopwatchState = stopwatchState, text = strings.pause)
+        ResetButton(stopwatchState = stopwatchState, text = strings.reset)
     }
 }
 
@@ -208,11 +208,12 @@ private fun ControlButtons(stopwatchState: StopwatchState) {
  * Кнопка запуска секундомера.
  *
  * @param stopwatchState Состояние для проверки доступности кнопки
+ * @param text Текст кнопки
  */
 @Composable
-private fun StartButton(stopwatchState: StopwatchState) {
+private fun StartButton(stopwatchState: StopwatchState, text: String) {
     StopwatchButton(
-        text = "Start",
+        text = text,
         onClick = { stopwatchState.start() },
         enabled = !stopwatchState.isRunning
     )
@@ -222,11 +223,12 @@ private fun StartButton(stopwatchState: StopwatchState) {
  * Кнопка паузы секундомера.
  *
  * @param stopwatchState Состояние для проверки доступности кнопки
+ * @param text Текст кнопки
  */
 @Composable
-private fun PauseButton(stopwatchState: StopwatchState) {
+private fun PauseButton(stopwatchState: StopwatchState, text: String) {
     StopwatchButton(
-        text = "Pause",
+        text = text,
         onClick = { stopwatchState.pause() },
         enabled = stopwatchState.isRunning
     )
@@ -236,11 +238,12 @@ private fun PauseButton(stopwatchState: StopwatchState) {
  * Кнопка сброса секундомера.
  *
  * @param stopwatchState Состояние для управления сбросом
+ * @param text Текст кнопки
  */
 @Composable
-private fun ResetButton(stopwatchState: StopwatchState) {
+private fun ResetButton(stopwatchState: StopwatchState, text: String) {
     StopwatchButton(
-        text = "Reset",
+        text = text,
         onClick = { stopwatchState.reset() },
         enabled = true
     )
@@ -265,6 +268,7 @@ private fun ActivitySelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
     val activities by remember { mutableStateOf(repository.loadActivities()) }
+    val strings = LocalizationManager.currentResources
 
     val selectedActivity = activities.find { it.id == stopwatchState.selectedActivityId }
 
@@ -273,7 +277,7 @@ private fun ActivitySelector(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            "Текущая активность:",
+            strings.current_activity,
             style = MaterialTheme.typography.subtitle1,
             color = MaterialTheme.colors.onBackground
         )
@@ -308,7 +312,7 @@ private fun ActivitySelector(
                         )
                     } else {
                         Text(
-                            "Выберите активность",
+                            text = strings.choose_activity,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -325,7 +329,7 @@ private fun ActivitySelector(
                     DropdownMenuItem(onClick = {
                         expanded = false
                     }) {
-                        Text("Нет активностей")
+                        Text(strings.no_activities)
                     }
                 } else {
                     activities.forEach { activity ->
@@ -362,7 +366,7 @@ private fun ActivitySelector(
                     // Здесь можно добавить логику для быстрого создания активности
                     expanded = false
                 }) {
-                    Text("Управление активностями...")
+                    Text(strings.manage_activities)
                 }
             }
         }
@@ -370,7 +374,7 @@ private fun ActivitySelector(
         if (selectedActivity != null) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Активность '${selectedActivity.name}' выбрана",
+                text = strings.activity_selected.format(selectedActivity.name),
                 style = MaterialTheme.typography.caption,
                 color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
             )

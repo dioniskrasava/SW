@@ -24,6 +24,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import app.sw.data.model.Activity
+import app.sw.i18n.LocalizationManager
 import app.sw.util.parseColor
 import kotlin.random.Random
 
@@ -55,6 +56,8 @@ fun ActivityEditor(
     onDelete: (Activity) -> Unit,
     onDismiss: () -> Unit
 ) {
+    val strings = LocalizationManager.currentResources
+
     var name by remember { mutableStateOf(activity?.name ?: "") }
     var color by remember { mutableStateOf(activity?.color ?: generateRandomColor()) }
 
@@ -80,7 +83,7 @@ fun ActivityEditor(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    if (activity == null) "Новая активность" else "Редактирование",
+                    if (activity == null) strings.new_activity else strings.edit_activity,
                     style = MaterialTheme.typography.h6,
                     color = MaterialTheme.colors.onSurface
                 )
@@ -89,7 +92,7 @@ fun ActivityEditor(
 
                 // Name Input с улучшенным TextField
                 Text(
-                    "Название:",
+                    strings.activity_name,
                     style = MaterialTheme.typography.body2,
                     color = MaterialTheme.colors.onSurface
                 )
@@ -109,7 +112,7 @@ fun ActivityEditor(
                     textStyle = TextStyle(color = MaterialTheme.colors.onSurface),
                     placeholder = {
                         Text(
-                            "Введите название активности",
+                            strings.enter_activity_name,
                             color = MaterialTheme.colors.onSurface.copy(alpha = 0.5f)
                         )
                     },
@@ -135,7 +138,7 @@ fun ActivityEditor(
 
                 // Color Selection - с исправленной обработкой выбора
                 Text(
-                    "Цвет:",
+                    strings.color,
                     style = MaterialTheme.typography.body2,
                     color = MaterialTheme.colors.onSurface
                 )
@@ -275,6 +278,8 @@ private fun ActionButtons(
     onDelete: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    val strings = LocalizationManager.currentResources
+
     Row(
         horizontalArrangement = Arrangement.End,
         modifier = Modifier.fillMaxWidth()
@@ -286,7 +291,7 @@ private fun ActionButtons(
             ) {
                 Icon(
                     Icons.Default.Delete,
-                    contentDescription = "Удалить",
+                    contentDescription = strings.delete,
                     tint = MaterialTheme.colors.error
                 )
             }
@@ -300,14 +305,14 @@ private fun ActionButtons(
             ),
             modifier = Modifier.padding(end = 8.dp)
         ) {
-            Text("Отмена", color = MaterialTheme.colors.onBackground)
+            Text(strings.cancel, color = MaterialTheme.colors.onBackground)
         }
 
         Button(
             onClick = onSave,
             enabled = name.isNotBlank()
         ) {
-            Text(if (activity == null) "Добавить" else "Сохранить")
+            Text(if (activity == null) strings.add else strings.save)
         }
     }
 }

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import app.sw.data.model.Activity
+import app.sw.i18n.LocalizationManager
 import app.sw.util.parseColor
 
 /**
@@ -43,6 +44,8 @@ fun ActivityManagementItem(
     onSelect: () -> Unit,
     onEdit: () -> Unit
 ) {
+    val strings = LocalizationManager.currentResources
+
     Card(
         backgroundColor = if (isSelected) {
             MaterialTheme.colors.primary.copy(alpha = 0.1f)
@@ -82,7 +85,7 @@ fun ActivityManagementItem(
             Row {
                 if (isSelected) {
                     Text(
-                        "✓ Текущая",
+                        "✓ ${strings.current_activity_text}",
                         color = MaterialTheme.colors.primary,
                         style = MaterialTheme.typography.caption,
                         modifier = Modifier.padding(end = 12.dp)
@@ -94,7 +97,7 @@ fun ActivityManagementItem(
                 ) {
                     Icon(
                         Icons.Default.Edit,
-                        "Edit",
+                        contentDescription = strings.edit_activity,
                         tint = MaterialTheme.colors.onSurface
                     )
                 }

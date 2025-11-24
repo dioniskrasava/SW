@@ -31,6 +31,7 @@ data class AppSettings(
     val mainWindowHeight: Int = 165,
     val settingsWindowWidth: Int = 500,
     val settingsWindowHeight: Int = 500,
+    val language: String = "ru",
 ) {
     companion object {
         // --- КОНСТАНТЫ ОГРАНИЧЕНИЙ ОКНА ---

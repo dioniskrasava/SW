@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.sw.data.model.RecordType
 import app.sw.data.model.TimeRecord
+import app.sw.i18n.LocalizationManager
 import app.sw.util.formatTimeHumanReadable
 import java.text.SimpleDateFormat
 import java.util.*
@@ -57,14 +58,17 @@ fun ActivityLogs(
 
 @Composable
 private fun ModernLogItem(log: TimeRecord) {
+
+    val strings = LocalizationManager.currentResources
+
     // Определяем стиль в зависимости от типа записи
     val (icon, color, label) = when (log.type) {
-        RecordType.START -> Triple(Icons.Default.PlayArrow, Color(0xFF4CAF50), "Запуск")
-        RecordType.CONTINUE -> Triple(Icons.Default.PlayArrow, Color(0xFF81C784), "Продолжение")
-        RecordType.PAUSE -> Triple(Icons.Default.Pause, Color(0xFFFF9800), "Пауза") // Оранжевый
-        RecordType.RESET -> Triple(Icons.Default.Refresh, Color(0xFFE57373), "Сброс") // Мягкий красный
-        RecordType.COMPLETE -> Triple(Icons.Default.CheckCircle, Color(0xFF2196F3), "Завершено") // Синий
-        RecordType.INACTIVE -> Triple(Icons.Default.TimerOff, Color.Gray, "Бездействие")
+        RecordType.START -> Triple(Icons.Default.PlayArrow, Color(0xFF4CAF50), strings.start)
+        RecordType.CONTINUE -> Triple(Icons.Default.PlayArrow, Color(0xFF81C784), strings.continue_text) // нужно добавить в Strings.kt
+        RecordType.PAUSE -> Triple(Icons.Default.Pause, Color(0xFFFF9800), strings.pause)
+        RecordType.RESET -> Triple(Icons.Default.Refresh, Color(0xFFE57373), strings.reset)
+        RecordType.COMPLETE -> Triple(Icons.Default.CheckCircle, Color(0xFF2196F3), strings.complete) // нужно добавить
+        RecordType.INACTIVE -> Triple(Icons.Default.TimerOff, Color.Gray, strings.inactivity)
     }
 
     // Форматируем время начала для отображения (например "14:30")
@@ -116,7 +120,7 @@ private fun ModernLogItem(log: TimeRecord) {
 
                     Column {
                         Text(
-                            text = if (log.type == RecordType.INACTIVE) "Простой" else log.activityName,
+                            text = if (log.type == RecordType.INACTIVE) strings.idle else log.activityName,
                             style = MaterialTheme.typography.subtitle2,
                             fontWeight = FontWeight.Bold,
                             color = MaterialTheme.colors.onSurface

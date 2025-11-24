@@ -1,6 +1,7 @@
 package app.sw.ui.settings
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
@@ -10,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.sw.data.model.Activity
 import app.sw.data.repository.ActivityRepository
+import app.sw.i18n.LocalizationManager
 import app.sw.ui.main.StopwatchState
 
 /**
@@ -39,7 +41,8 @@ fun SettingsScreen(
     modifier: Modifier = Modifier
 ) {
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = listOf("Основные", "Активности", "Окна")
+    val strings = LocalizationManager.currentResources
+    val tabs = listOf(strings.general_settings, strings.activities_management, strings.window_settings)
 
     Column(
         modifier = modifier
@@ -58,7 +61,7 @@ fun SettingsScreen(
             }
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                "Настройки",
+                strings.settings,
                 style = MaterialTheme.typography.h6,
                 color = MaterialTheme.colors.onBackground
             )
@@ -77,7 +80,7 @@ fun SettingsScreen(
 
         // Tab Content
         when (selectedTab) {
-            0 -> GeneralSettingsTab(stopwatchState = stopwatchState)
+            0 -> GeneralSettingsTab(stopwatchState = stopwatchState, repository = repository)
             1 -> ActivitiesManagementTab(
                 stopwatchState = stopwatchState,
                 repository = repository
@@ -97,24 +100,97 @@ fun SettingsScreen(
  * - Отображение логов на главном экране
  *
  * @param stopwatchState Состояние для управления настройками
+ * @param repository Репозиторий для сохранения настроек языка
  *
  * @see SettingsScreen
  * @see StopwatchState
  */
 @Composable
 private fun GeneralSettingsTab(
-    stopwatchState: StopwatchState
+    stopwatchState: StopwatchState,
+    repository: ActivityRepository
 ) {
+    val strings = LocalizationManager.currentResources
+    val settings = remember { repository.loadSettings() }
+    var selectedLanguage by remember { mutableStateOf(settings.language) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
         Text(
-            "Основные настройки",
+            strings.general_settings,
             style = MaterialTheme.typography.h6,
             color = MaterialTheme.colors.onBackground
         )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Выбор языка с радиокнопками
+        Text(
+            strings.language,
+            style = MaterialTheme.typography.subtitle1,
+            color = MaterialTheme.colors.onBackground,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Русский язык
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        selectedLanguage = "ru"
+                        LocalizationManager.setLanguage("ru", repository)
+                    }
+                    .padding(8.dp)
+            ) {
+                RadioButton(
+                    selected = selectedLanguage == "ru",
+                    onClick = {
+                        selectedLanguage = "ru"
+                        LocalizationManager.setLanguage("ru", repository)
+                    }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    strings.russian,
+                    style = MaterialTheme.typography.body1,
+                    color = MaterialTheme.colors.onBackground
+                )
+            }
+
+            // Английский язык
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        selectedLanguage = "en"
+                        LocalizationManager.setLanguage("en", repository)
+                    }
+                    .padding(8.dp)
+            ) {
+                RadioButton(
+                    selected = selectedLanguage == "en",
+                    onClick = {
+                        selectedLanguage = "en"
+                        LocalizationManager.setLanguage("en", repository)
+                    }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    strings.english,
+                    style = MaterialTheme.typography.body1,
+                    color = MaterialTheme.colors.onBackground
+                )
+            }
+        }
 
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -133,12 +209,12 @@ private fun GeneralSettingsTab(
             Spacer(modifier = Modifier.width(12.dp))
             Column {
                 Text(
-                    "Включить выбор активностей",
+                    strings.enable_activity_tracking,
                     style = MaterialTheme.typography.body1,
                     color = MaterialTheme.colors.onBackground
                 )
                 Text(
-                    "Позволяет выбирать активности и вести логи времени",
+                    strings.activity_tracking_description,
                     style = MaterialTheme.typography.caption,
                     color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
                 )
@@ -149,7 +225,7 @@ private fun GeneralSettingsTab(
 
         if (stopwatchState.isActivityTrackingEnabled) {
             Text(
-                "Теперь в основном окне можно выбирать активности и просматривать логи",
+                strings.activity_tracking_enabled,
                 style = MaterialTheme.typography.body2,
                 color = MaterialTheme.colors.primary,
                 modifier = Modifier.padding(8.dp)
@@ -180,6 +256,7 @@ private fun ActivitiesManagementTab(
     stopwatchState: StopwatchState,
     repository: ActivityRepository
 ) {
+    val strings = LocalizationManager.currentResources
     var activities by remember { mutableStateOf(repository.loadActivities()) }
     var showEditor by remember { mutableStateOf(false) }
     var editingActivity by remember { mutableStateOf<Activity?>(null) }
@@ -195,7 +272,7 @@ private fun ActivitiesManagementTab(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                "Управление активностями",
+                strings.activities_management,
                 style = MaterialTheme.typography.h6,
                 color = MaterialTheme.colors.onBackground
             )
@@ -205,7 +282,7 @@ private fun ActivitiesManagementTab(
                     editingActivity = null
                 }
             ) {
-                Text("Добавить")
+                Text(strings.add)
             }
         }
 
@@ -219,7 +296,7 @@ private fun ActivitiesManagementTab(
                 contentAlignment = Alignment.Center
             ) {
                 Text(
-                    "Нет активностей. Нажмите 'Добавить' чтобы создать первую.",
+                    strings.no_activities,
                     style = MaterialTheme.typography.body2,
                     color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
                 )

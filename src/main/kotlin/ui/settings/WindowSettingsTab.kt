@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import app.sw.data.repository.ActivityRepository
+import app.sw.i18n.LocalizationManager
 
 import androidx.compose.foundation.VerticalScrollbar
 import androidx.compose.foundation.rememberScrollbarAdapter
@@ -32,6 +33,8 @@ import androidx.compose.foundation.verticalScroll
 fun WindowSettingsTab(
     repository: ActivityRepository
 ) {
+    val strings = LocalizationManager.currentResources
+
     // Загружаем текущие настройки
     var settings by remember { mutableStateOf(repository.loadSettings()) }
 
@@ -53,7 +56,7 @@ fun WindowSettingsTab(
                 .padding(end = 12.dp) // <-- Отступ справа, чтобы текст не наезжал на скроллбар
         ) {
             Text(
-                "Настройки размеров окон",
+                strings.window_size_settings,
                 style = MaterialTheme.typography.h6,
                 color = MaterialTheme.colors.onBackground
             )
@@ -62,8 +65,8 @@ fun WindowSettingsTab(
 
             // Настройки главного окна
             WindowSizeSection(
-                title = "Главное окно (секундомер)",
-                description = "Размер окна в основном режиме работы",
+                title = strings.main_window,
+                description = strings.main_window_description,
                 widthValue = mainWindowWidth,
                 heightValue = mainWindowHeight,
                 onWidthChange = { mainWindowWidth = it },
@@ -74,8 +77,8 @@ fun WindowSettingsTab(
 
             // Настройки окна настроек
             WindowSizeSection(
-                title = "Окно настроек",
-                description = "Размер окна в расширенном режиме настроек",
+                title = strings.settings_window,
+                description = strings.settings_window_description,
                 widthValue = settingsWindowWidth,
                 heightValue = settingsWindowHeight,
                 onWidthChange = { settingsWindowWidth = it },
@@ -99,14 +102,14 @@ fun WindowSettingsTab(
                 },
                 modifier = Modifier.align(Alignment.End)
             ) {
-                Text("Сохранить размеры")
+                Text(strings.save_sizes)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Информация о применении изменений
             Text(
-                "Изменения вступят в силу при следующем открытии соответствующего окна",
+                strings.changes_will_apply,
                 style = MaterialTheme.typography.caption,
                 color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f)
             )
@@ -120,12 +123,6 @@ fun WindowSettingsTab(
                 .fillMaxHeight()
         )
     }
-
-
-
-
-
-
 }
 
 /**
@@ -147,6 +144,8 @@ private fun WindowSizeSection(
     onWidthChange: (String) -> Unit,
     onHeightChange: (String) -> Unit
 ) {
+    val strings = LocalizationManager.currentResources
+
     Column {
         Text(
             title,
@@ -171,7 +170,7 @@ private fun WindowSizeSection(
             OutlinedTextField(
                 value = widthValue,
                 onValueChange = onWidthChange,
-                label = { Text("Ширина (dp)") },
+                label = { Text(strings.width) },
                 modifier = Modifier.weight(1f),
                 singleLine = true
             )
@@ -180,7 +179,7 @@ private fun WindowSizeSection(
             OutlinedTextField(
                 value = heightValue,
                 onValueChange = onHeightChange,
-                label = { Text("Высота (dp)") },
+                label = { Text(strings.height) },
                 modifier = Modifier.weight(1f),
                 singleLine = true
             )
@@ -190,7 +189,7 @@ private fun WindowSizeSection(
         if (widthValue.toIntOrNull() == null || heightValue.toIntOrNull() == null) {
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "Введите числовые значения",
+                strings.enter_numeric_values,
                 style = MaterialTheme.typography.caption,
                 color = MaterialTheme.colors.error
             )

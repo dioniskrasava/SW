@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "app.sw"
-version = "1.0-SNAPSHOT"
+version = "1.0.5-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -26,8 +26,8 @@ compose.desktop {
 
         nativeDistributions {
             packageName = "StopwatchApp"
-            packageVersion = "1.0.4"
-            description = "(v1.0.4) Приложение-секундомер с трекингом активностей"
+            packageVersion = "1.0.5"
+            description = "(v1.0.5) Приложение-секундомер с трекингом активностей"
 
             linux {
                 appCategory = "Utility"
