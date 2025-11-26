@@ -32,6 +32,7 @@ data class AppSettings(
     val settingsWindowWidth: Int = 500,
     val settingsWindowHeight: Int = 500,
     val language: String = "ru",
+    val primaryColor: String = "#1491F6", // ← ДОБАВЛЯЕМ ЭТО ПОЛЕ (текущий голубой)
 ) {
     companion object {
         // --- КОНСТАНТЫ ОГРАНИЧЕНИЙ ОКНА ---

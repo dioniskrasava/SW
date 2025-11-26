@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import app.sw.data.model.Activity
 import app.sw.i18n.LocalizationManager
+import app.sw.ui.components.ColorPicker
 import app.sw.util.parseColor
 import kotlin.random.Random
 
@@ -144,7 +145,7 @@ fun ActivityEditor(
                 )
                 Spacer(modifier = Modifier.height(8.dp))
 
-                ColorGrid(
+                ColorPicker(
                     selectedColor = color,
                     onColorSelected = { newColor ->
                         color = newColor
@@ -166,50 +167,7 @@ fun ActivityEditor(
     }
 }
 
-/**
- * Компонент выбора цвета из сетки предопределенных цветов.
- *
- * Отображает палитру из 12 цветов, организованных в 3 строки по 4 цвета.
- * Поддерживает выбор цвета с визуальной индикацией выбранного варианта.
- *
- * @param selectedColor Выбранный цвет в HEX-формате
- * @param onColorSelected Callback при выборе цвета
- *
- * @see ActivityEditor
- * @see ColorItem
- */
-@Composable
-private fun ColorGrid(
-    selectedColor: String,
-    onColorSelected: (String) -> Unit
-) {
-    val colors = listOf(
-        "#FF5252", "#FF9800", "#FFEB3B", "#4CAF50",
-        "#2196F3", "#3F51B5", "#9C27B0", "#E91E63",
-        "#795548", "#607D8B", "#00BCD4", "#8BC34A"
-    )
 
-    // Разбиваем на ряды по 4 цвета
-    val rows = colors.chunked(4)
-
-    Column {
-        rows.forEach { rowColors ->
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                rowColors.forEach { colorHex ->
-                    ColorItem(
-                        colorHex = colorHex,
-                        isSelected = selectedColor == colorHex,
-                        onSelected = { onColorSelected(colorHex) }
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-        }
-    }
-}
 
 /**
  * Элемент выбора цвета в палитре.

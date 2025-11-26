@@ -7,12 +7,15 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.sw.data.model.Activity
 import app.sw.data.repository.ActivityRepository
 import app.sw.i18n.LocalizationManager
 import app.sw.ui.main.StopwatchState
+
+import app.sw.ui.components.ColorPicker
 
 /**
  * Главный экран настроек приложения с вкладками.
@@ -114,6 +117,11 @@ private fun GeneralSettingsTab(
     val settings = remember { repository.loadSettings() }
     var selectedLanguage by remember { mutableStateOf(settings.language) }
 
+
+    // ДОБАВЛЯЕМ СОСТОЯНИЕ ДЛЯ ЦВЕТА
+    var selectedColor by remember { mutableStateOf(settings.primaryColor) }
+
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -126,6 +134,37 @@ private fun GeneralSettingsTab(
         )
 
         Spacer(modifier = Modifier.height(24.dp))
+
+
+        // ДОБАВЛЯЕМ ВЫБОР ЦВЕТА ТЕМЫ
+        Text(
+            strings.theme_color,
+            style = MaterialTheme.typography.subtitle1,
+            color = MaterialTheme.colors.onBackground,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+
+
+        ColorPicker(
+            selectedColor = selectedColor,
+            onColorSelected = { newColor ->
+                selectedColor = newColor
+                // Сохраняем в настройках при выборе
+                repository.saveSettings(settings.copy(primaryColor = newColor))
+            }
+        )
+
+        Text(
+            strings.theme_color_description,
+            style = MaterialTheme.typography.caption,
+            color = MaterialTheme.colors.onBackground.copy(alpha = 0.7f),
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+
 
         // Выбор языка с радиокнопками
         Text(
@@ -360,4 +399,11 @@ private fun ActivitiesManagementTab(
             )
         }
     }
+}
+
+
+
+@Composable
+fun blockColorSelection(){
+
 }

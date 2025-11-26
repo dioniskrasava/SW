@@ -14,6 +14,7 @@ import app.sw.i18n.LocalizationManager
 import app.sw.i18n.stringResource
 import app.sw.ui.main.StopwatchApp
 import app.sw.ui.main.rememberStopwatchState
+import app.sw.util.parseColor
 import java.awt.Dimension
 
 /**
@@ -52,6 +53,13 @@ fun main() = application {
     val initialSettings = repository.loadSettings()
     LocalizationManager.setLanguage(initialSettings.language, repository)
 
+
+    // ДОБАВЛЯЕМ: Загружаем цвет из настроек
+    val primaryColorFromSettings = remember(initialSettings.primaryColor) {
+        parseColor(initialSettings.primaryColor)
+    }
+
+
     // Создаем состояние окна здесь
     val windowState = rememberWindowState(
         width = initialSettings.mainWindowWidth.dp,
@@ -72,7 +80,7 @@ fun main() = application {
 
         MaterialTheme(
             colors = darkColors(
-                primary = PrimaryBlue,
+                primary = primaryColorFromSettings, // ← ИСПОЛЬЗУЕМ ЦВЕТ ИЗ НАСТРОЕК
                 background = DarkBackground,
                 surface = DarkSurface,
                 onPrimary = androidx.compose.ui.graphics.Color.White,

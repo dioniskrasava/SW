@@ -1,5 +1,20 @@
 # Changelog
 
+
+## v 1.0.7 (in development)
+
+
+
+<span style="font-size: 70%; color: gray">
+
+### Notes
+1) SettingsScreen имеет компоненты которые можно вынести отдельно
+
+
+</span>
+
+---
+
 ## v 1.0.6
 
 ### Add
