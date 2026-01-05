@@ -47,6 +47,7 @@ sealed class AppScreen {
  * @see AppScreen
  * @see AppSettings
  */
+
 @Composable
 fun StopwatchApp(
     stopwatchState: StopwatchState,
