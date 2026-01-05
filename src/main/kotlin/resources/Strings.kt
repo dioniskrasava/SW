@@ -53,6 +53,9 @@ interface StringResources {
     val continue_text: String
     val complete: String
     val current_activity_text: String // для отображения "Текущая" в списке
+
+    val theme_color: String
+    val theme_color_description: String
 }
 
 object Strings {
@@ -106,6 +109,9 @@ object Strings {
         override val continue_text = "Продолжение"
         override val complete = "Завершено"
         override val current_activity_text = "Текущая"
+
+        override val theme_color = "Цвет темы"
+        override val theme_color_description = "Основной цвет интерфейса приложения"
     }
 
     object En : StringResources {
@@ -158,5 +164,8 @@ object Strings {
         override val continue_text = "Continue"
         override val complete = "Complete"
         override val current_activity_text = "Current"
+
+        override val theme_color = "Theme Color"
+        override val theme_color_description = "Main color of the application interface"
     }
 }
